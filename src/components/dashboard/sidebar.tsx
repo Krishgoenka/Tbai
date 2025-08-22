@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bot } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -15,12 +16,18 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 
+type IconName = keyof typeof LucideIcons;
+
 interface DashboardSidebarProps {
   navItems: {
     href: string;
-    icon: React.ElementType;
+    icon: IconName;
     label: string;
   }[];
+}
+
+const isIconName = (name: string): name is IconName => {
+  return name in LucideIcons;
 }
 
 export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
@@ -36,7 +43,9 @@ export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.map((item) => (
+            {navItems.map((item) => {
+              const Icon = isIconName(item.icon) ? LucideIcons[item.icon] : LucideIcons.HelpCircle;
+              return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -47,12 +56,12 @@ export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
                   }}
                 >
                   <Link href={item.href}>
-                    <item.icon />
+                    <Icon />
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            ))}
+            )})}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>

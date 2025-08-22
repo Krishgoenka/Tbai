@@ -1,11 +1,10 @@
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { User, Upload } from "lucide-react";
 
 const studentNavItems = [
-  { href: "/student", label: "Profile", icon: User },
-  { href: "/student/submissions", label: "Submissions", icon: Upload },
+  { href: "/student", label: "Profile", icon: "User" },
+  { href: "/student/submissions", label: "Submissions", icon: "Upload" },
 ];
 
 export default function StudentLayout({
