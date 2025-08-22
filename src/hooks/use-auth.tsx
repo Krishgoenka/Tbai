@@ -27,16 +27,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const role = userDoc.data().role as UserRole;
-          setUser(user);
-          setUserRole(role);
-        } else {
-          await auth.signOut();
-          setUser(null);
-          setUserRole(null);
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const role = userDoc.data().role as UserRole;
+              setUser(user);
+              setUserRole(role);
+            } else {
+              // User exists in Auth but not in Firestore, treat as logged out
+              await auth.signOut();
+              setUser(null);
+              setUserRole(null);
+            }
+        } catch (e) {
+            console.error("Error fetching user role:", e);
+            await auth.signOut();
+            setUser(null);
+            setUserRole(null);
         }
       } else {
         setUser(null);
@@ -51,17 +59,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const isDashboardPage = pathname.startsWith('/admin') || pathname.startsWith('/student');
-
-    if (!user && isDashboardPage) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && userRole === 'admin' && !pathname.startsWith('/admin')) {
-      router.push('/admin');
-    } else if (user && userRole === 'student' && !pathname.startsWith('/student')) {
-      router.push('/student');
+    const isAuthPage = pathname === '/login' || pathname === '/signup';
+    const isStudentPage = pathname.startsWith('/student');
+    const isAdminPage = pathname.startsWith('/admin');
+    
+    if (user) {
+        // If user is logged in, redirect from auth pages to their dashboard
+        if (isAuthPage) {
+            if (userRole === 'admin') router.push('/admin');
+            else if (userRole === 'student') router.push('/student');
+        }
+        // If user is on the wrong dashboard, redirect them
+        else if (userRole === 'admin' && !isAdminPage) {
+            router.push('/admin');
+        } else if (userRole === 'student' && !isStudentPage) {
+            router.push('/student');
+        }
+    } else {
+        // If user is not logged in, redirect from protected pages
+        if (isAdminPage || isStudentPage) {
+            router.push('/login');
+        }
     }
 
   }, [user, userRole, loading, router, pathname]);
@@ -73,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const value = { user, userRole, loading, logout };
 
+  // Render children only when not loading to prevent flicker and premature rendering
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 

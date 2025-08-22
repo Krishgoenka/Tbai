@@ -25,12 +25,11 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Success", description: "Logged in successfully!" });
+      toast({ title: "Success", description: "Logged in successfully! Redirecting..." });
       // AuthProvider will handle redirection based on role
     } catch (error: any) {
-      console.error("Login Error Code:", error.code);
-      console.error("Login Error Message:", error.message);
-      toast({ title: "Error", description: `(${error.code}) ${error.message}` || "Invalid email or password.", variant: "destructive" });
+      console.error("Login Error:", error);
+      toast({ title: "Login Error", description: error.message || "Invalid email or password.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -55,13 +54,12 @@ export default function LoginPage() {
                 variant: "destructive" 
             });
         } else {
-             toast({ title: "Success", description: "Logged in successfully!" });
+             toast({ title: "Success", description: "Logged in successfully! Redirecting..." });
              // AuthProvider will handle redirection based on role
         }
     } catch (error: any) {
-        console.error("Google Login Error Code:", error.code);
-        console.error("Google Login Error Message:", error.message);
-        toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
+        console.error("Google Login Error:", error);
+        toast({ title: "Google Login Error", description: error.message, variant: "destructive" });
     } finally {
         setLoading(false);
     }

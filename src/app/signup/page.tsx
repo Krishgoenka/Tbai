@@ -21,6 +21,10 @@ export default function SignupPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -33,12 +37,11 @@ export default function SignupPage() {
         role: "student",
       });
 
-      toast({ title: "Success", description: "Account created successfully! You will be redirected." });
+      toast({ title: "Success", description: "Account created successfully! Redirecting..." });
       // The auth provider will handle redirection.
     } catch (error: any) {
-      console.error("Signup Error Code:", error.code);
-      console.error("Signup Error Message:", error.message);
-      toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
+      console.error("Signup Error:", error);
+      toast({ title: "Signup Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -63,12 +66,11 @@ export default function SignupPage() {
         });
       }
       
-      toast({ title: "Success", description: "Signed up successfully! You will be redirected." });
+      toast({ title: "Success", description: "Signed up successfully! Redirecting..." });
       // The auth provider will handle redirection.
     } catch (error: any) {
-       console.error("Google Signup Error Code:", error.code);
-       console.error("Google Signup Error Message:", error.message);
-       toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
+       console.error("Google Signup Error:", error);
+       toast({ title: "Google Signup Error", description: error.message, variant: "destructive" });
     } finally {
         setLoading(false);
     }
