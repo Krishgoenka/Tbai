@@ -36,8 +36,9 @@ export default function SignupPage() {
       toast({ title: "Success", description: "Account created successfully! You will be redirected." });
       // The auth provider will handle redirection.
     } catch (error: any) {
-      console.error("Signup error:", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error("Signup Error Code:", error.code);
+      console.error("Signup Error Message:", error.message);
+      toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -65,8 +66,9 @@ export default function SignupPage() {
       toast({ title: "Success", description: "Signed up successfully! You will be redirected." });
       // The auth provider will handle redirection.
     } catch (error: any) {
-       console.error("Google signup error:", error);
-       toast({ title: "Error", description: error.message, variant: "destructive" });
+       console.error("Google Signup Error Code:", error.code);
+       console.error("Google Signup Error Message:", error.message);
+       toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
     } finally {
         setLoading(false);
     }
@@ -79,10 +81,10 @@ export default function SignupPage() {
           <div className="flex justify-center mb-4">
             <Bot className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Create a Student Account</CardTitle>
 
           <CardDescription className="text-center">
-            Sign up as a student to get started.
+            Sign up to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,7 +102,7 @@ export default function SignupPage() {
               <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={loading} />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Creating Account..." : "Create Student Account"}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
             <Button onClick={handleGoogleSignUp} disabled={loading} variant="outline" className="w-full mt-4">

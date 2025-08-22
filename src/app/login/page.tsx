@@ -28,8 +28,9 @@ export default function LoginPage() {
       toast({ title: "Success", description: "Logged in successfully!" });
       // AuthProvider will handle redirection based on role
     } catch (error: any) {
-      console.error("Login Error:", error);
-      toast({ title: "Error", description: error.message || "Invalid email or password.", variant: "destructive" });
+      console.error("Login Error Code:", error.code);
+      console.error("Login Error Message:", error.message);
+      toast({ title: "Error", description: `(${error.code}) ${error.message}` || "Invalid email or password.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -58,8 +59,9 @@ export default function LoginPage() {
              // AuthProvider will handle redirection based on role
         }
     } catch (error: any) {
-        console.error("Google Login Error:", error);
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        console.error("Google Login Error Code:", error.code);
+        console.error("Google Login Error Message:", error.message);
+        toast({ title: "Error", description: `(${error.code}) ${error.message}`, variant: "destructive" });
     } finally {
         setLoading(false);
     }
@@ -74,7 +76,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-2xl text-center">Login</CardTitle>
           <CardDescription className="text-center">
-            Enter your email below to login to your account.
+            Enter your credentials to access your account.
           </CardDescription>
         </CardHeader>
         <CardContent>
