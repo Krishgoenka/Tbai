@@ -11,11 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -31,13 +33,12 @@ export default function SignupPage() {
       const user = userCredential.user;
 
       // The useAuth hook will handle creating the user document in Firestore
-      // with the 'student' role. We just need to update the display name here.
-      // Note: Updating profile is handled by useAuth, but if you need immediate display name:
+      // with the selected role.
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: fullName,
-        role: "student",
+        role: role,
       });
 
 
@@ -74,7 +75,7 @@ export default function SignupPage() {
           <div className="flex justify-center mb-4">
             <Bot className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-center">Create a Student Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
 
           <CardDescription className="text-center">
             Sign up to get started.
@@ -93,6 +94,18 @@ export default function SignupPage() {
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={loading} />
+            </div>
+             <div className="grid gap-2">
+                <Label htmlFor="role">Role</Label>
+                <Select onValueChange={setRole} defaultValue={role} disabled={loading}>
+                    <SelectTrigger id="role">
+                        <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Creating Account..." : "Create Account"}
