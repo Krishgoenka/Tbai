@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -35,8 +36,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -50,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUserRole(role);
             } else {
               // New user, create their profile document
-              const role: UserRole = user.email === 'goenkakrish@gmail.com' ? 'admin' : 'student';
+              const role: UserRole = pathname.startsWith('/signup/admin') ? 'admin' : 'student';
 
               const newUser = {
                 uid: user.uid,
@@ -76,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (loading) return;
@@ -108,7 +114,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const value = { user, userRole, loading, logout };
 
-  return <AuthContext.Provider value={value}>{loading ? <LoadingScreen /> : children}</AuthContext.Provider>;
+  if (!isClient || loading) {
+    return <LoadingScreen />;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
