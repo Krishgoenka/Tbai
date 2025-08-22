@@ -19,7 +19,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleSignUp = async (role: 'student' | 'admin') => {
@@ -62,11 +61,18 @@ export default function SignupPage() {
       const user = result.user;
 
       if (role === 'admin') {
+        if (!user.email) {
+            await auth.signOut();
+            toast({ title: "Error", description: "Could not retrieve email from Google Account.", variant: "destructive" });
+            setLoading(false);
+            return;
+        }
         const q = query(collection(db, "preApprovedAdmins"), where("email", "==", user.email));
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
-          await auth.signOut(); // Sign out the user if not pre-approved
-          toast({ title: "Error", description: "This email is not authorized for admin signup.", variant: "destructive" });
+          await user.delete(); // Delete the user if not pre-approved
+          await auth.signOut();
+          toast({ title: "Error", description: "This Google account is not authorized for admin signup.", variant: "destructive" });
           setLoading(false);
           return;
         }
@@ -93,29 +99,30 @@ export default function SignupPage() {
     }
   };
 
-
-  const renderSignupForm = (role: 'student' | 'admin') => (
-    <div className="grid gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor={`${role}-full-name`}>Full Name</Label>
-        <Input id={`${role}-full-name`} placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} />
+  const renderSignupForm = (role: 'student' | 'admin') => {
+    return (
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor={`${role}-full-name`}>Full Name</Label>
+          <Input id={`${role}-full-name`} placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor={`${role}-email`}>Email</Label>
+          <Input id={`${role}-email`} type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor={`${role}-password`}>Password</Label>
+          <Input id={`${role}-password`} type="password" required onChange={(e) => setPassword(e.target.value)} />
+        </div>
+        <Button onClick={() => handleSignUp(role)} disabled={loading} className="w-full">
+          {loading ? "Creating Account..." : `Create ${role === 'admin' ? 'Admin' : 'Student'} Account`}
+        </Button>
+        <Button onClick={() => handleGoogleSignUp(role)} disabled={loading} variant="outline" className="w-full">
+          {loading ? "Please wait..." : `Sign up with Google`}
+        </Button>
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor={`${role}-email`}>Email</Label>
-        <Input id={`${role}-email`} type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor={`${role}-password`}>Password</Label>
-        <Input id={`${role}-password`} type="password" required onChange={(e) => setPassword(e.target.value)} />
-      </div>
-      <Button onClick={() => handleSignUp(role)} disabled={loading} className="w-full">
-        {loading ? "Creating Account..." : `Create ${role === 'admin' ? 'Admin' : 'Student'} Account`}
-      </Button>
-      <Button onClick={() => handleGoogleSignUp(role)} disabled={loading} variant="outline" className="w-full">
-        {loading ? "Please wait..." : `Sign up with Google`}
-      </Button>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -151,7 +158,7 @@ export default function SignupPage() {
                 <CardHeader>
                   <CardTitle>Admin Signup</CardTitle>
                   <CardDescription>Admin accounts require pre-approval.</CardDescription>
-                </Header>
+                </CardHeader>
                 <CardContent>
                   {renderSignupForm("admin")}
                 </CardContent>
