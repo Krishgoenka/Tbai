@@ -1,6 +1,5 @@
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
-import { AppShell } from "@/components/shell";
 
 const studentNavItems = [
   { href: "/student", label: "Profile", icon: "User" },
@@ -13,12 +12,12 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppShell>
+    <>
       <DashboardSidebar navItems={studentNavItems} />
       <div className="flex-1 flex flex-col">
         <DashboardHeader />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
       </div>
-    </AppShell>
+    </>
   );
 }

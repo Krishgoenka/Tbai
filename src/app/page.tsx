@@ -33,12 +33,6 @@ export default function Home() {
             <Button size="lg" asChild>
               <Link href="/signup">Sign Up Now</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/admin">Demo Admin</Link>
-            </Button>
-             <Button size="lg" variant="outline" asChild>
-              <Link href="/student">Demo Student</Link>
-            </Button>
           </div>
         </section>
 
