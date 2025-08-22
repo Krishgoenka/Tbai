@@ -83,6 +83,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
               />
@@ -95,6 +96,7 @@ export default function LoginPage() {
                 id="password" 
                 type="password" 
                 required 
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
               />

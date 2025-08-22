@@ -99,30 +99,28 @@ export default function SignupPage() {
     }
   };
 
-  const renderSignupForm = (role: 'student' | 'admin') => {
-    return (
-      <div className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor={`${role}-full-name`}>Full Name</Label>
-          <Input id={`${role}-full-name`} placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor={`${role}-email`}>Email</Label>
-          <Input id={`${role}-email`} type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor={`${role}-password`}>Password</Label>
-          <Input id={`${role}-password`} type="password" required onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <Button onClick={() => handleSignUp(role)} disabled={loading} className="w-full">
-          {loading ? "Creating Account..." : `Create ${role === 'admin' ? 'Admin' : 'Student'} Account`}
-        </Button>
-        <Button onClick={() => handleGoogleSignUp(role)} disabled={loading} variant="outline" className="w-full">
-          {loading ? "Please wait..." : `Sign up with Google`}
-        </Button>
+  const renderSignupForm = (role: 'student' | 'admin') => (
+    <div className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor={`${role}-full-name`}>Full Name</Label>
+        <Input id={`${role}-full-name`} placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} />
       </div>
-    );
-  };
+      <div className="grid gap-2">
+        <Label htmlFor={`${role}-email`}>Email</Label>
+        <Input id={`${role}-email`} type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor={`${role}-password`}>Password</Label>
+        <Input id={`${role}-password`} type="password" required onChange={(e) => setPassword(e.target.value)} />
+      </div>
+      <Button onClick={() => handleSignUp(role)} disabled={loading} className="w-full">
+        {loading ? "Creating Account..." : `Create ${role === 'admin' ? 'Admin' : 'Student'} Account`}
+      </Button>
+      <Button onClick={() => handleGoogleSignUp(role)} disabled={loading} variant="outline" className="w-full">
+        {loading ? "Please wait..." : `Sign up with Google`}
+      </Button>
+    </div>
+  );
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
