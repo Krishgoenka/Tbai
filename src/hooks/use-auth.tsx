@@ -36,13 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUserRole(role);
             } else {
               // New user, create their profile document
-              // Check if the email matches the designated admin email
               const role: UserRole = user.email === 'goenkakrish@gmail.com' ? 'admin' : 'student';
 
               const newUser = {
                 uid: user.uid,
                 email: user.email,
-                displayName: user.displayName || user.email,
+                displayName: user.displayName || user.email?.split('@')[0],
                 role: role,
               };
               await setDoc(userDocRef, newUser);
@@ -68,25 +67,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const isAuthPage = pathname === '/login' || pathname === '/signup';
-    
-    // If we are on an auth page, DO NOT redirect. This allows the auth flows to complete.
-    if (isAuthPage) return;
-
+    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
     const isStudentPage = pathname.startsWith('/student');
     const isAdminPage = pathname.startsWith('/admin');
-    
+
     if (user) {
-        if (userRole === 'admin' && !isAdminPage) {
-            router.push('/admin');
-        } else if (userRole === 'student' && !isStudentPage) {
-            router.push('/student');
+      // User is logged in
+      if (isAuthPage) {
+        // If user is on an auth page, redirect them to their dashboard
+        if (userRole === 'admin') {
+          router.push('/admin');
+        } else if (userRole === 'student') {
+          router.push('/student');
         }
+      } else if (userRole === 'admin' && !isAdminPage) {
+        // If admin is not on an admin page, redirect to admin dashboard
+        router.push('/admin');
+      } else if (userRole === 'student' && !isStudentPage) {
+        // If student is not on a student page, redirect to student dashboard
+        router.push('/student');
+      }
     } else {
-        // If the user is not logged in and is trying to access a protected page, redirect to login.
-        if (isAdminPage || isStudentPage) {
-            router.push('/login');
-        }
+      // User is not logged in
+      if (isAdminPage || isStudentPage) {
+        // If user tries to access a protected page, redirect to login
+        router.push('/login');
+      }
     }
 
   }, [user, userRole, loading, router, pathname]);
