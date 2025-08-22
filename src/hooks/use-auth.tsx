@@ -34,9 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(user);
           setUserRole(role);
         } else {
-          // This case can happen if user is created in Auth but Firestore doc creation fails.
-          // Or if the user is deleted from Firestore but not Auth.
-          await auth.signOut(); // Log them out to be safe.
+          await auth.signOut();
           setUser(null);
           setUserRole(null);
         }
@@ -51,42 +49,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (loading) {
-      return; // Don't do anything while loading.
-    }
+    if (loading) return;
 
-    const isAuthPage = pathname === '/login' || pathname === '/signup';
     const isDashboardPage = pathname.startsWith('/admin') || pathname.startsWith('/student');
 
-    if (user && userRole) {
-      // User is logged in and has a role.
-      if (userRole === 'admin' && !pathname.startsWith('/admin')) {
-        router.push('/admin');
-      } else if (userRole === 'student' && !pathname.startsWith('/student')) {
-        router.push('/student');
-      } else if (isAuthPage) {
-        // If they are on login/signup, redirect them away.
-        router.push(userRole === 'admin' ? '/admin' : '/student');
-      }
-    } else {
-      // User is not logged in or role is not determined yet.
-      if (isDashboardPage) {
-        // If they are trying to access a protected page, redirect to login.
-        router.push('/login');
-      }
+    if (!user && isDashboardPage) {
+      router.push('/login');
+      return;
     }
+
+    if (user && userRole === 'admin' && !pathname.startsWith('/admin')) {
+      router.push('/admin');
+    } else if (user && userRole === 'student' && !pathname.startsWith('/student')) {
+      router.push('/student');
+    }
+
   }, [user, userRole, loading, router, pathname]);
 
   const logout = async () => {
     await auth.signOut();
-    setUser(null);
-    setUserRole(null);
     router.push('/login');
   };
   
   const value = { user, userRole, loading, logout };
 
-  // We only render children when loading is false to avoid flashes of incorrect content.
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
