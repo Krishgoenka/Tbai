@@ -30,11 +30,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          const role = userDoc.data().role;
+          const role = userDoc.data().role as UserRole;
           setUser(user);
           setUserRole(role);
         } else {
-          // Handle case where user exists in Auth but not Firestore
+          // This case can happen if user is created in Auth but Firestore doc creation fails.
+          // Or if the user is deleted from Firestore but not Auth.
+          await auth.signOut(); // Log them out to be safe.
           setUser(null);
           setUserRole(null);
         }
@@ -49,32 +51,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading) {
+      return; // Don't do anything while loading.
+    }
 
     const isAuthPage = pathname === '/login' || pathname === '/signup';
-    
-    if (user) {
-        if (userRole === 'admin' && !pathname.startsWith('/admin')) {
-            router.push('/admin');
-        } else if (userRole === 'student' && !pathname.startsWith('/student')) {
-            router.push('/student');
-        } else if (isAuthPage) {
-            router.push(userRole === 'admin' ? '/admin' : '/student');
-        }
+    const isDashboardPage = pathname.startsWith('/admin') || pathname.startsWith('/student');
+
+    if (user && userRole) {
+      // User is logged in and has a role.
+      if (userRole === 'admin' && !pathname.startsWith('/admin')) {
+        router.push('/admin');
+      } else if (userRole === 'student' && !pathname.startsWith('/student')) {
+        router.push('/student');
+      } else if (isAuthPage) {
+        // If they are on login/signup, redirect them away.
+        router.push(userRole === 'admin' ? '/admin' : '/student');
+      }
     } else {
-        if (!isAuthPage && pathname !== '/') {
-            router.push('/login');
-        }
+      // User is not logged in or role is not determined yet.
+      if (isDashboardPage) {
+        // If they are trying to access a protected page, redirect to login.
+        router.push('/login');
+      }
     }
   }, [user, userRole, loading, router, pathname]);
 
   const logout = async () => {
     await auth.signOut();
+    setUser(null);
+    setUserRole(null);
     router.push('/login');
   };
   
   const value = { user, userRole, loading, logout };
 
+  // We only render children when loading is false to avoid flashes of incorrect content.
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
