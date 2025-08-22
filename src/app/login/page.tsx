@@ -25,9 +25,9 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Success", description: "Logged in successfully!" });
-      // AuthProvider will handle redirection
+      // AuthProvider will handle redirection based on role
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: "Invalid email or password.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -40,20 +40,20 @@ export default function LoginPage() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        // Check if user exists in Firestore, if not, they must sign up first.
+        // Check if user exists in Firestore. If not, they can't log in.
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
             await auth.signOut(); // Sign out the user
             toast({ 
-                title: "Error", 
+                title: "Login Failed", 
                 description: "No account found with this Google account. Please sign up first.", 
                 variant: "destructive" 
             });
         } else {
              toast({ title: "Success", description: "Logged in successfully!" });
-             // AuthProvider will handle redirection
+             // AuthProvider will handle redirection based on role
         }
     } catch (error: any) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -71,7 +71,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-2xl text-center">Login</CardTitle>
           <CardDescription className="text-center">
-            Enter your email below to login to your account
+            Enter your email below to login to your account.
           </CardDescription>
         </CardHeader>
         <CardContent>
