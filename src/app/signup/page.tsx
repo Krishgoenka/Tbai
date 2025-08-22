@@ -151,7 +151,7 @@ export default function SignupPage() {
                 <CardHeader>
                   <CardTitle>Admin Signup</CardTitle>
                   <CardDescription>Admin accounts require pre-approval.</CardDescription>
-                </CardHeader>
+                </Header>
                 <CardContent>
                   {renderSignupForm("admin")}
                 </CardContent>
