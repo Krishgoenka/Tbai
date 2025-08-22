@@ -66,6 +66,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (loading) return;
 
     const isAuthPage = pathname === '/login' || pathname === '/signup';
+    
+    // If we are on an auth page, DO NOT redirect. Let the user complete their action.
+    if (isAuthPage) return;
+
     const isStudentPage = pathname.startsWith('/student');
     const isAdminPage = pathname.startsWith('/admin');
     
@@ -74,12 +78,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             router.push('/admin');
         } else if (userRole === 'student' && !isStudentPage) {
             router.push('/student');
-        } else if (isAuthPage) {
-            // If on auth page and logged in, redirect to correct dashboard
-            if (userRole === 'admin') router.push('/admin');
-            else if (userRole === 'student') router.push('/student');
         }
     } else {
+        // If the user is not logged in and is trying to access a protected page, redirect to login.
         if (isAdminPage || isStudentPage) {
             router.push('/login');
         }
