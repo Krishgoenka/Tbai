@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Users, GraduationCap } from "lucide-react";
+import { Bot, Users, GraduationCap, UserPlus, UserCog } from "lucide-react";
 
 export default function Home() {
   return (
@@ -13,10 +13,13 @@ export default function Home() {
         </Link>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/login">Admin Login</Link>
+            <Link href="/login">Login</Link>
           </Button>
           <Button asChild>
-            <Link href="/signup">Student Signup</Link>
+            <Link href="/signup/student">Student Signup</Link>
+          </Button>
+           <Button variant="outline" asChild>
+            <Link href="/signup/admin">Admin Signup</Link>
           </Button>
         </div>
       </header>
@@ -30,8 +33,17 @@ export default function Home() {
             Streamline employee tasks, manage student assignments, and unlock powerful insights with our all-in-one AI platform.
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" asChild>
-              <Link href="/signup">Sign Up Now</Link>
+             <Button size="lg" asChild>
+              <Link href="/signup/student">
+                <UserPlus className="mr-2"/>
+                Sign Up as a Student
+              </Link>
+            </Button>
+             <Button size="lg" variant="secondary" asChild>
+              <Link href="/signup/admin">
+                <UserCog className="mr-2"/>
+                Sign Up as an Admin
+              </Link>
             </Button>
           </div>
         </section>

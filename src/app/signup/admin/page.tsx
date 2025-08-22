@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot } from "lucide-react";
+import { Bot, UserCog } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
-export default function SignupPage() {
+export default function AdminSignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +32,15 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // The useAuth hook will handle creating the user document in Firestore
-      // with the selected role.
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: fullName,
-        role: role,
+        role: "admin", // Set role to admin
       });
 
-
-      toast({ title: "Success", description: "Account created successfully! Redirecting..." });
-      // The auth provider will handle redirection.
+      toast({ title: "Success", description: "Admin account created successfully! Redirecting..." });
+      router.push('/admin');
     } catch (error: any) {
       console.error("Signup Error:", error);
       toast({ title: "Signup Error", description: error.message, variant: "destructive" });
@@ -56,10 +53,10 @@ export default function SignupPage() {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      // The useAuth hook will handle user creation/checking.
+      // We are just initiating the popup.
       toast({ title: "Success", description: "Signed up successfully! Redirecting..." });
-      // The useAuth hook will handle creating the user document if it doesn't exist
-      // and then handle redirection.
     } catch (error: any) {
        console.error("Google Signup Error:", error);
        toast({ title: "Google Signup Error", description: error.message, variant: "destructive" });
@@ -73,12 +70,11 @@ export default function SignupPage() {
       <Card className="mx-auto max-w-sm w-full">
         <CardHeader>
           <div className="flex justify-center mb-4">
-            <Bot className="h-10 w-10 text-primary" />
+            <UserCog className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
-
+          <CardTitle className="text-2xl text-center">Create Admin Account</CardTitle>
           <CardDescription className="text-center">
-            Sign up to get started.
+            Enter your details to create a new administrator account.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -95,20 +91,8 @@ export default function SignupPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={loading} />
             </div>
-             <div className="grid gap-2">
-                <Label htmlFor="role">Role</Label>
-                <Select onValueChange={setRole} defaultValue={role} disabled={loading}>
-                    <SelectTrigger id="role">
-                        <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Creating Account..." : "Create Account"}
+              {loading ? "Creating Account..." : "Create Admin Account"}
             </Button>
           </form>
             <Button onClick={handleGoogleSignUp} disabled={loading} variant="outline" className="w-full mt-4">
