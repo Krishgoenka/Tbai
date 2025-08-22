@@ -35,16 +35,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUser(user);
               setUserRole(role);
             } else {
-              // New user (e.g., from Google Sign-In), create student profile
+              // New user, create their profile document
+              // Check if the email matches the designated admin email
+              const role: UserRole = user.email === 'goenkakrish@gmail.com' ? 'admin' : 'student';
+
               const newUser = {
                 uid: user.uid,
                 email: user.email,
-                displayName: user.displayName,
-                role: 'student',
+                displayName: user.displayName || user.email,
+                role: role,
               };
               await setDoc(userDocRef, newUser);
               setUser(user);
-              setUserRole('student');
+              setUserRole(role);
             }
         } catch (e) {
             console.error("Error fetching user role:", e);
@@ -67,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const isAuthPage = pathname === '/login' || pathname === '/signup';
     
-    // If we are on an auth page, DO NOT redirect. Let the user complete their action.
+    // If we are on an auth page, DO NOT redirect. This allows the auth flows to complete.
     if (isAuthPage) return;
 
     const isStudentPage = pathname.startsWith('/student');
