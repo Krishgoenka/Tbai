@@ -13,10 +13,10 @@ export default function Home() {
         </Link>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">Admin Login</Link>
           </Button>
           <Button asChild>
-            <Link href="/signup">Get Started</Link>
+            <Link href="/signup">Student Signup</Link>
           </Button>
         </div>
       </header>
