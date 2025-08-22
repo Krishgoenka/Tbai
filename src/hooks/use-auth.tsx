@@ -75,16 +75,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // User is logged in
       if (isAuthPage) {
         // If user is on an auth page, redirect them to their dashboard
-        if (userRole === 'admin') {
-          router.push('/admin');
-        } else if (userRole === 'student') {
-          router.push('/student');
-        }
-      } else if (userRole === 'admin' && !isAdminPage) {
-        // If admin is not on an admin page, redirect to admin dashboard
+        router.push(userRole === 'admin' ? '/admin' : '/student');
+      } else if (userRole === 'admin' && isStudentPage) {
+        // If an admin is on a student page, redirect to admin dashboard
         router.push('/admin');
-      } else if (userRole === 'student' && !isStudentPage) {
-        // If student is not on a student page, redirect to student dashboard
+      } else if (userRole === 'student' && isAdminPage) {
+        // If a student is on an admin page, redirect to student dashboard
         router.push('/student');
       }
     } else {
