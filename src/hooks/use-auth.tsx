@@ -5,6 +5,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type UserRole = 'admin' | 'student' | null;
 
@@ -16,6 +17,19 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const LoadingScreen = () => (
+  <div className="flex h-screen w-screen items-center justify-center">
+    <div className="flex flex-col items-center space-y-4">
+       <Skeleton className="h-12 w-12 rounded-full" />
+        <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+        </div>
+    </div>
+  </div>
+);
+
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -72,21 +86,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAdminPage = pathname.startsWith('/admin');
 
     if (user) {
-      // User is logged in
       if (isAuthPage) {
-        // If user is on an auth page, redirect them to their dashboard
         router.push(userRole === 'admin' ? '/admin' : '/student');
       } else if (userRole === 'admin' && isStudentPage) {
-        // If an admin is on a student page, redirect to admin dashboard
         router.push('/admin');
       } else if (userRole === 'student' && isAdminPage) {
-        // If a student is on an admin page, redirect to student dashboard
         router.push('/student');
       }
     } else {
-      // User is not logged in
       if (isAdminPage || isStudentPage) {
-        // If user tries to access a protected page, redirect to login
         router.push('/login');
       }
     }
@@ -100,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const value = { user, userRole, loading, logout };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{loading ? <LoadingScreen /> : children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
