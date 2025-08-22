@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -35,10 +35,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUser(user);
               setUserRole(role);
             } else {
-              // User exists in Auth but not in Firestore, treat as logged out
-              await auth.signOut();
-              setUser(null);
-              setUserRole(null);
+              // New user (e.g., from Google Sign-In), create student profile
+              const newUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                role: 'student',
+              };
+              await setDoc(userDocRef, newUser);
+              setUser(user);
+              setUserRole('student');
             }
         } catch (e) {
             console.error("Error fetching user role:", e);
@@ -64,19 +70,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAdminPage = pathname.startsWith('/admin');
     
     if (user) {
-        // If user is logged in, redirect from auth pages to their dashboard
-        if (isAuthPage) {
-            if (userRole === 'admin') router.push('/admin');
-            else if (userRole === 'student') router.push('/student');
-        }
-        // If user is on the wrong dashboard, redirect them
-        else if (userRole === 'admin' && !isAdminPage) {
+        if (userRole === 'admin' && !isAdminPage) {
             router.push('/admin');
         } else if (userRole === 'student' && !isStudentPage) {
             router.push('/student');
+        } else if (isAuthPage) {
+            // If on auth page and logged in, redirect to correct dashboard
+            if (userRole === 'admin') router.push('/admin');
+            else if (userRole === 'student') router.push('/student');
         }
     } else {
-        // If user is not logged in, redirect from protected pages
         if (isAdminPage || isStudentPage) {
             router.push('/login');
         }
@@ -91,7 +94,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const value = { user, userRole, loading, logout };
 
-  // Render children only when not loading to prevent flicker and premature rendering
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 

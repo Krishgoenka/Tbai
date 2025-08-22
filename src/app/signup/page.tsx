@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,12 +30,16 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // The useAuth hook will handle creating the user document in Firestore
+      // with the 'student' role. We just need to update the display name here.
+      // Note: Updating profile is handled by useAuth, but if you need immediate display name:
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: fullName,
         role: "student",
       });
+
 
       toast({ title: "Success", description: "Account created successfully! Redirecting..." });
       // The auth provider will handle redirection.
@@ -49,25 +53,12 @@ export default function SignupPage() {
 
   const handleGoogleSignUp = async () => {
     setLoading(true);
+    const provider = new GoogleAuthProvider();
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          role: "student",
-        });
-      }
-      
+      await signInWithPopup(auth, provider);
       toast({ title: "Success", description: "Signed up successfully! Redirecting..." });
-      // The auth provider will handle redirection.
+      // The useAuth hook will handle creating the user document if it doesn't exist
+      // and then handle redirection.
     } catch (error: any) {
        console.error("Google Signup Error:", error);
        toast({ title: "Google Signup Error", description: error.message, variant: "destructive" });

@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,26 +36,11 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    const provider = new GoogleAuthProvider();
     try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        // Check if user exists in Firestore. If not, they can't log in.
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists()) {
-            await auth.signOut(); // Sign out the user
-            toast({ 
-                title: "Login Failed", 
-                description: "No account found with this Google account. Please sign up first.", 
-                variant: "destructive" 
-            });
-        } else {
-             toast({ title: "Success", description: "Logged in successfully! Redirecting..." });
-             // AuthProvider will handle redirection based on role
-        }
+        await signInWithPopup(auth, provider);
+        toast({ title: "Success", description: "Logged in successfully! Redirecting..." });
+        // AuthProvider will handle user creation/checking and redirection
     } catch (error: any) {
         console.error("Google Login Error:", error);
         toast({ title: "Google Login Error", description: error.message, variant: "destructive" });
