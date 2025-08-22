@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,14 +20,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Success", description: "Logged in successfully!" });
       // AuthProvider will handle redirection based on role
     } catch (error: any) {
-      toast({ title: "Error", description: "Invalid email or password.", variant: "destructive" });
+      console.error("Login Error:", error);
+      toast({ title: "Error", description: error.message || "Invalid email or password.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,7 @@ export default function LoginPage() {
              // AuthProvider will handle redirection based on role
         }
     } catch (error: any) {
+        console.error("Google Login Error:", error);
         toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
         setLoading(false);
@@ -75,7 +78,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -101,13 +104,13 @@ export default function LoginPage() {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleLogin} disabled={loading} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Logging in...' : 'Login'}
             </Button>
-            <Button onClick={handleGoogleLogin} disabled={loading} variant="outline" className="w-full">
+          </form>
+            <Button onClick={handleGoogleLogin} disabled={loading} variant="outline" className="w-full mt-4">
               {loading ? 'Please wait...' : 'Login with Google'}
             </Button>
-          </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="underline">

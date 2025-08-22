@@ -19,7 +19,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -32,9 +33,10 @@ export default function SignupPage() {
         role: "student",
       });
 
-      toast({ title: "Success", description: "Account created successfully!" });
+      toast({ title: "Success", description: "Account created successfully! You will be redirected." });
       // The auth provider will handle redirection.
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -60,9 +62,10 @@ export default function SignupPage() {
         });
       }
       
-      toast({ title: "Success", description: "Signed up successfully!" });
+      toast({ title: "Success", description: "Signed up successfully! You will be redirected." });
       // The auth provider will handle redirection.
     } catch (error: any) {
+       console.error("Google signup error:", error);
        toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
         setLoading(false);
@@ -77,31 +80,32 @@ export default function SignupPage() {
             <Bot className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+
           <CardDescription className="text-center">
             Sign up as a student to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <form onSubmit={handleSignUp} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="full-name">Full Name</Label>
-              <Input id="full-name" placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} />
+              <Input id="full-name" placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} disabled={loading} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
+              <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} disabled={loading}/>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} />
+              <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={loading} />
             </div>
-            <Button onClick={handleSignUp} disabled={loading} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Creating Account..." : "Create Student Account"}
             </Button>
-            <Button onClick={handleGoogleSignUp} disabled={loading} variant="outline" className="w-full">
+          </form>
+            <Button onClick={handleGoogleSignUp} disabled={loading} variant="outline" className="w-full mt-4">
               {loading ? "Please wait..." : "Sign up with Google"}
             </Button>
-          </div>
            <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/login" className="underline">
