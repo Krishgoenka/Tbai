@@ -5,6 +5,15 @@ import { assignmentSchema, type Assignment } from '@/app/admin/assignments/schem
 // This is acting as our in-memory database for the demo.
 let assignmentsData: Assignment[] = [
   {
+    id: "ASN005",
+    title: "Test Assignment",
+    description: "This is a test assignment to demonstrate the synchronization between the admin and student panels. Please submit any file to complete.",
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Due 3 days from now
+    fileUrl: "/placeholder.pdf",
+    status: "Published",
+    submissions: 0,
+  },
+  {
     id: "ASN001",
     title: "Calculus Homework 3",
     description: "Complete exercises 1-10 on page 50 of the textbook. Show all your work for full credit. The topics covered include derivatives and integration.",
