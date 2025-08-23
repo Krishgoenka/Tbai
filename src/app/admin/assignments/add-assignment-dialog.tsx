@@ -35,7 +35,7 @@ const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl:
 
 export function AddAssignmentDialog() {
     const [isOpen, setIsOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submittingStatus, setSubmittingStatus] = useState<"Draft" | "Published" | "idle">("idle");
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -48,17 +48,15 @@ export function AddAssignmentDialog() {
         },
     });
 
-    const handleFormSubmit = async (status: "Published" | "Draft") => {
-        setIsSubmitting(true);
-        const values = form.getValues();
-        const validation = formSchema.safeParse(values);
-
-        if (!validation.success) {
-            form.trigger(); // Trigger validation to show errors
-            setIsSubmitting(false);
+    const processFormSubmission = async (status: "Published" | "Draft") => {
+        const isValid = await form.trigger();
+        if (!isValid) {
             return;
         }
-
+        
+        setSubmittingStatus(status);
+        
+        const values = form.getValues();
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
         const assignmentData = {
@@ -82,12 +80,16 @@ export function AddAssignmentDialog() {
                 variant: "destructive",
             });
         }
-        setIsSubmitting(false);
+        setSubmittingStatus("idle");
     }
 
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (submittingStatus === 'idle') {
+            setIsOpen(open);
+        }
+    }}>
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -183,12 +185,12 @@ export function AddAssignmentDialog() {
                     />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => handleFormSubmit('Draft')} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    <Button type="button" variant="secondary" onClick={() => processFormSubmission('Draft')} disabled={submittingStatus !== 'idle'}>
+                        {submittingStatus === 'Draft' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Save as Draft
                     </Button>
-                    <Button type="button" onClick={() => handleFormSubmit('Published')} disabled={isSubmitting}>
-                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    <Button type="button" onClick={() => processFormSubmission('Published')} disabled={submittingStatus !== 'idle'}>
+                         {submittingStatus === 'Published' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Publish
                     </Button>
                 </DialogFooter>
