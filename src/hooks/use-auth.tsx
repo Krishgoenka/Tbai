@@ -44,6 +44,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsClient(true);
   }, []);
 
+  // For now, we will just return the children directly to bypass authentication
+  // This can be restored later.
+  /*
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -56,7 +59,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUserRole(role);
             } else {
               // New user, create their profile document
-              const role: UserRole = pathname.startsWith('/signup/admin') ? 'admin' : 'student';
+              // Default new signups to student, unless it's the designated admin email
+              const role: UserRole = user.email === 'goenkakrish@gmail.com' ? 'admin' : 'student';
 
               const newUser = {
                 uid: user.uid,
@@ -92,12 +96,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAdminPage = pathname.startsWith('/admin');
 
     if (user) {
-      if (isAuthPage) {
-        router.push(userRole === 'admin' ? '/admin' : '/student');
-      } else if (userRole === 'admin' && isStudentPage) {
+      if (userRole === 'admin' && isStudentPage) {
         router.push('/admin');
       } else if (userRole === 'student' && isAdminPage) {
         router.push('/student');
+      } else if (isAuthPage) {
+         router.push(userRole === 'admin' ? '/admin' : '/student');
       }
     } else {
       if (isAdminPage || isStudentPage) {
@@ -106,17 +110,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
   }, [user, userRole, loading, router, pathname]);
+  */
 
   const logout = async () => {
-    await auth.signOut();
-    router.push('/login');
+    // await auth.signOut();
+    // router.push('/login');
+    // For now, just redirect to home
+    router.push('/');
   };
   
-  const value = { user, userRole, loading, logout };
+  // Hardcode a dummy user for now to allow access to dashboards
+  const value = { user: {} as User, userRole: null as UserRole, loading: false, logout };
 
-  if (!isClient || loading) {
-    return <LoadingScreen />;
-  }
+  // if (!isClient || loading) {
+  //   return <LoadingScreen />;
+  // }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

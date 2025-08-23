@@ -12,14 +12,11 @@ export default function Home() {
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
           <Button asChild>
-            <Link href="/signup/student">Student Signup</Link>
+            <Link href="/student">Student Section</Link>
           </Button>
            <Button variant="outline" asChild>
-            <Link href="/signup/admin">Admin Signup</Link>
+            <Link href="/admin">Admin Section</Link>
           </Button>
         </div>
       </header>
@@ -34,15 +31,15 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
-              <Link href="/signup/student">
+              <Link href="/student">
                 <UserPlus className="mr-2"/>
-                Sign Up as a Student
+                Go to Student Section
               </Link>
             </Button>
              <Button size="lg" variant="secondary" asChild>
-              <Link href="/signup/admin">
+              <Link href="/admin">
                 <UserCog className="mr-2"/>
-                Sign Up as an Admin
+                Go to Admin Section
               </Link>
             </Button>
           </div>
