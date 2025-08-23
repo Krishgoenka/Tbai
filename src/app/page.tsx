@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Users, GraduationCap, UserPlus, UserCog } from "lucide-react";
+import { Bot, Users, GraduationCap, UserPlus, UserCog, LogIn } from "lucide-react";
 
 export default function Home() {
   return (
@@ -12,11 +12,11 @@ export default function Home() {
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Button asChild>
-            <Link href="/student">Student Section</Link>
-          </Button>
-           <Button variant="outline" asChild>
-            <Link href="/admin">Admin Section</Link>
+           <Button asChild variant="outline">
+              <Link href="/login">
+                <LogIn className="mr-2"/>
+                Login
+              </Link>
           </Button>
         </div>
       </header>
@@ -31,15 +31,15 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
-              <Link href="/student">
+              <Link href="/signup/student">
                 <UserPlus className="mr-2"/>
-                Go to Student Section
+                Student Signup
               </Link>
             </Button>
              <Button size="lg" variant="secondary" asChild>
-              <Link href="/admin">
+              <Link href="/signup/admin">
                 <UserCog className="mr-2"/>
-                Go to Admin Section
+                Admin Signup
               </Link>
             </Button>
           </div>
