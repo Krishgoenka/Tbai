@@ -41,14 +41,20 @@ export default function StudentSubmissionsPage() {
                 <CardContent>
                     <ScrollArea className="h-[450px]">
                         <div className="space-y-4">
-                            {assignments.map((assignment) => (
-                                <AssignmentCard 
-                                    key={assignment.id} 
-                                    assignment={assignment} 
-                                    isSelected={selectedAssignment?.id === assignment.id}
-                                    onSelect={() => setSelectedAssignment(assignment)}
-                                />
-                            ))}
+                            {assignments.length > 0 ? (
+                                assignments.map((assignment) => (
+                                    <AssignmentCard 
+                                        key={assignment.id} 
+                                        assignment={assignment} 
+                                        isSelected={selectedAssignment?.id === assignment.id}
+                                        onSelect={() => setSelectedAssignment(assignment)}
+                                    />
+                                ))
+                            ) : (
+                                <div className="text-sm text-muted-foreground text-center p-4">
+                                    No published assignments available.
+                                </div>
+                            )}
                         </div>
                     </ScrollArea>
                 </CardContent>
@@ -78,14 +84,16 @@ export default function StudentSubmissionsPage() {
                             </p>
                         </div>
                         
-                        <div className="space-y-2">
-                             <Button variant="outline" size="sm" asChild>
-                                <a href={selectedAssignment.fileUrl} target="_blank" rel="noopener noreferrer">
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    View Attached PDF
-                                </a>
-                            </Button>
-                        </div>
+                        {selectedAssignment.fileUrl && (
+                            <div className="space-y-2">
+                                <Button variant="outline" size="sm" asChild>
+                                    <a href={selectedAssignment.fileUrl} target="_blank" rel="noopener noreferrer">
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        View Attached PDF
+                                    </a>
+                                </Button>
+                            </div>
+                        )}
                         
                         <Separator className="my-4" />
 
