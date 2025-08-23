@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { assignmentSchema, type Assignment } from '@/app/admin/assignments/schema';
 import { db } from './firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, increment } from 'firebase/firestore';
 
 const assignmentsCollection = collection(db, 'assignments');
 

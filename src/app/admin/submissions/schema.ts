@@ -1,3 +1,4 @@
+
 import { z } from "zod"
 
 export const submissionSchema = z.object({
@@ -5,6 +6,7 @@ export const submissionSchema = z.object({
   studentName: z.string(),
   studentEmail: z.string().email(),
   submissionDate: z.string(),
+  assignmentId: z.string(),
   assignmentTitle: z.string(),
   fileUrl: z.string().url().or(z.string().startsWith("/")),
   score: z.number().optional(),

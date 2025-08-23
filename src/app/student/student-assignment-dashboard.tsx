@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useState, useEffect } from "react";
@@ -6,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Book, CalendarCheck, CalendarX } from "lucide-react";
+import { Upload, FileText, Book, CalendarCheck, CalendarX, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { Assignment } from "@/app/admin/assignments/schema";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { submitAssignment } from "./actions";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -49,6 +52,9 @@ interface StudentAssignmentDashboardProps {
 
 export function StudentAssignmentDashboard({ initialActiveAssignments, initialPastAssignments }: StudentAssignmentDashboardProps) {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // On initial load, select the first active assignment if it exists, otherwise the first past assignment.
@@ -60,6 +66,44 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
         setSelectedAssignment(null);
     }
   }, [initialActiveAssignments, initialPastAssignments]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedAssignment) {
+      toast({ title: "Error", description: "Please select an assignment first.", variant: "destructive" });
+      return;
+    }
+    if (!selectedFile) {
+      toast({ title: "Error", description: "Please select a file to upload.", variant: "destructive" });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    const result = await submitAssignment({
+      assignmentId: selectedAssignment.id,
+      assignmentTitle: selectedAssignment.title,
+    });
+
+    if (result.success) {
+      toast({ title: "Success!", description: result.message });
+      setSelectedFile(null);
+      // Optionally reset the file input visually
+      const fileInput = document.getElementById("assignment-file") as HTMLInputElement;
+      if(fileInput) fileInput.value = "";
+    } else {
+      toast({ title: "Submission Failed", description: result.message, variant: "destructive" });
+    }
+
+    setIsSubmitting(false);
+  };
 
 
   return (
@@ -164,15 +208,26 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                     <Input 
                                         id="assignment-file" 
                                         type="file" 
-                                        accept=".pdf,.png,.jpg,.jpeg,.mp4,.py,.c,.cpp,.ipynb,.csv" 
+                                        accept=".pdf,.png,.jpg,.jpeg,.mp4,.py,.c,.cpp,.ipynb,.csv"
+                                        onChange={handleFileChange}
+                                        disabled={isSubmitting}
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Allowed types: PDF, JPG, PNG, MP4, PY, C, CPP, IPYNB, CSV.
                                     </p>
                                 </div>
-                                <Button>
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    Submit Assignment
+                                <Button onClick={handleSubmit} disabled={isSubmitting || !selectedFile}>
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            Submit Assignment
+                                        </>
+                                    )}
                                 </Button>
                              </div>
                         </div>
