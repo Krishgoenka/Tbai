@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -23,9 +23,8 @@ import { addAssignment } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { assignmentSchema } from "./schema"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, dueDate: true }).extend({
+const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true }).extend({
     dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
     title: z.string().min(3, "Title is required."),
@@ -36,6 +35,7 @@ const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl:
 
 export function AddAssignmentDialog() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -45,11 +45,20 @@ export function AddAssignmentDialog() {
             description: "",
             dueDate: "",
             dueTime: "23:59",
-            status: "Draft",
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    const handleFormSubmit = async (status: "Published" | "Draft") => {
+        setIsSubmitting(true);
+        const values = form.getValues();
+        const validation = formSchema.safeParse(values);
+
+        if (!validation.success) {
+            form.trigger(); // Trigger validation to show errors
+            setIsSubmitting(false);
+            return;
+        }
+
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
         const assignmentData = {
@@ -57,13 +66,12 @@ export function AddAssignmentDialog() {
            dueDate: new Date(combinedDueDate).toISOString(),
         };
         
-        // The file is already in the `values` object if selected.
-        const result = await addAssignment(assignmentData, values.file);
+        const result = await addAssignment(assignmentData, status, values.file);
 
         if (result.success) {
             toast({
                 title: "Success",
-                description: `Assignment has been successfully saved.`,
+                description: result.message,
             });
             form.reset();
             setIsOpen(false);
@@ -74,6 +82,7 @@ export function AddAssignmentDialog() {
                 variant: "destructive",
             });
         }
+        setIsSubmitting(false);
     }
 
 
@@ -87,7 +96,7 @@ export function AddAssignmentDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[475px]">
          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <DialogHeader>
                 <DialogTitle>Add New Assignment</DialogTitle>
                 <DialogDescription>
@@ -152,27 +161,6 @@ export function AddAssignmentDialog() {
                             />
                         </div>
                     </div>
-                     <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                <FormLabel className="text-right">Status</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select a status" />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                    <SelectItem value="Draft">Draft</SelectItem>
-                                    <SelectItem value="Published">Published</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage className="col-span-4 pl-[25%]" />
-                            </FormItem>
-                        )}
-                        />
                     <FormField
                         control={form.control}
                         name="file"
@@ -195,8 +183,14 @@ export function AddAssignmentDialog() {
                     />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>Cancel</Button>
-                    <Button type="submit">Save Assignment</Button>
+                    <Button type="button" variant="secondary" onClick={() => handleFormSubmit('Draft')} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Save as Draft
+                    </Button>
+                    <Button type="button" onClick={() => handleFormSubmit('Published')} disabled={isSubmitting}>
+                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Publish
+                    </Button>
                 </DialogFooter>
             </form>
         </Form>
