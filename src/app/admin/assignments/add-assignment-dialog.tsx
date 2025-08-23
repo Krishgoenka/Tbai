@@ -28,7 +28,7 @@ export function AddAssignmentDialog() {
         <DialogHeader>
           <DialogTitle>Add New Assignment</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new assignment.
+            Fill in the details below to create a new assignment. You can save it as a draft or publish it directly to students.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -58,7 +58,8 @@ export function AddAssignmentDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save Assignment</Button>
+          <Button variant="secondary">Save as Draft</Button>
+          <Button type="submit">Publish</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

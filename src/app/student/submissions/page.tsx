@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,20 +13,20 @@ import type { Assignment } from "@/app/admin/assignments/schema";
 import { AssignmentCard } from "./assignment-card";
 
 // Mock fetching assignments - in a real app this would be an API call
-const assignmentsPromise = getAssignments();
+const assignmentsPromise = getAssignments({ publishedOnly: true });
 
 export default function StudentSubmissionsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   
-  useState(() => {
+  useEffect(() => {
     assignmentsPromise.then(data => {
         setAssignments(data);
         if (data.length > 0) {
             setSelectedAssignment(data[0]);
         }
     });
-  });
+  }, []);
 
   return (
     <div className="space-y-8">

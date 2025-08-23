@@ -5,9 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Assignment } from "./schema"
 import { DataTableColumnHeader } from "../employees/data-table-column-header"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ExternalLink } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { DataTableRowActions } from "./data-table-row-actions"
 
 export const columns: ColumnDef<Assignment>[] = [
   {
@@ -38,6 +37,17 @@ export const columns: ColumnDef<Assignment>[] = [
       <DataTableColumnHeader column={column} title="Title" />
     ),
   },
+   {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string
+      const variant = status === "Published" ? "default" : "secondary"
+      return <Badge variant={variant}>{status}</Badge>
+    }
+  },
   {
     accessorKey: "dueDate",
     header: ({ column }) => (
@@ -56,16 +66,6 @@ export const columns: ColumnDef<Assignment>[] = [
   },
   {
     id: "actions",
-    header: "View PDF",
-    cell: ({ row }) => {
-        const assignment = row.original
-        return (
-            <Button variant="ghost" size="icon" asChild>
-                <Link href={assignment.fileUrl} target="_blank">
-                    <ExternalLink className="h-4 w-4" />
-                </Link>
-            </Button>
-        )
-    }
+    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ]

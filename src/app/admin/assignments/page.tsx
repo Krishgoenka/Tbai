@@ -1,9 +1,7 @@
-import { z } from 'zod';
+import { getAssignments } from '@/lib/assignment-data';
+import { AddAssignmentDialog } from './add-assignment-dialog';
 import { columns } from './columns';
 import { DataTable } from '../employees/data-table';
-import { assignmentSchema } from './schema';
-import { AddAssignmentDialog } from './add-assignment-dialog';
-import { getAssignments } from '@/lib/assignment-data';
 
 export default async function AssignmentsPage() {
   const assignments = await getAssignments();
