@@ -23,7 +23,7 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
   }
 }
 
-export async function addMockAssignment(assignment: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>) {
+export async function addAssignment(assignment: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>) {
     try {
         const newAssignment: Omit<Assignment, 'id'> = {
             ...assignment,
@@ -38,7 +38,7 @@ export async function addMockAssignment(assignment: Omit<Assignment, 'id' | 'sub
     }
 }
 
-export async function updateMockAssignment(id: string, updatedData: Partial<Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>>) {
+export async function updateAssignment(id: string, updatedData: Partial<Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>>) {
     try {
         const assignmentRef = doc(db, 'assignments', id);
         await updateDoc(assignmentRef, updatedData);
@@ -50,7 +50,7 @@ export async function updateMockAssignment(id: string, updatedData: Partial<Omit
 }
 
 
-export async function updateMockAssignmentStatus(id: string, status: "Published" | "Draft") {
+export async function updateAssignmentStatus(id: string, status: "Published" | "Draft") {
      try {
         const assignmentRef = doc(db, 'assignments', id);
         await updateDoc(assignmentRef, { status });
@@ -61,7 +61,7 @@ export async function updateMockAssignmentStatus(id: string, status: "Published"
     }
 }
 
-export async function deleteMockAssignment(id: string) {
+export async function deleteAssignment(id: string) {
     try {
         const assignmentRef = doc(db, 'assignments', id);
         await deleteDoc(assignmentRef);

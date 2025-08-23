@@ -3,7 +3,7 @@
 
 import { z } from "zod"
 import { assignmentSchema } from "./schema"
-import { addMockAssignment, updateMockAssignment, deleteMockAssignment, updateMockAssignmentStatus } from "@/lib/assignment-data"
+import { addAssignment as dbAddAssignment, updateAssignment as dbUpdateAssignment, deleteAssignment as dbDeleteAssignment, updateAssignmentStatus as dbUpdateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
 
 const addAssignmentSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true });
@@ -15,9 +15,10 @@ export async function addAssignment(data: z.infer<typeof addAssignmentSchema>) {
         
         // In a real app, you'd save to a database and handle file uploads here.
         // For now, we'll just add it to our mock data array.
-        await addMockAssignment(validatedData);
+        await dbAddAssignment(validatedData);
         revalidatePath("/admin/assignments");
         revalidatePath("/student/submissions");
+        revalidatePath("/student");
         return { success: true, message: "Assignment added successfully." };
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -30,9 +31,10 @@ export async function addAssignment(data: z.infer<typeof addAssignmentSchema>) {
 export async function updateAssignment(data: z.infer<typeof updateAssignmentSchema>) {
     try {
         const validatedData = updateAssignmentSchema.parse(data);
-        await updateMockAssignment(validatedData.id, validatedData);
+        await dbUpdateAssignment(validatedData.id, validatedData);
         revalidatePath("/admin/assignments");
         revalidatePath("/student/submissions");
+        revalidatePath("/student");
         return { success: true, message: "Assignment updated successfully." };
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -45,9 +47,10 @@ export async function updateAssignment(data: z.infer<typeof updateAssignmentSche
 
 export async function updateAssignmentStatus(id: string, status: "Published" | "Draft") {
     try {
-        await updateMockAssignmentStatus(id, status);
+        await dbUpdateAssignmentStatus(id, status);
         revalidatePath("/admin/assignments");
         revalidatePath("/student/submissions");
+        revalidatePath("/student");
         return { success: true, message: `Assignment has been ${status === 'Published' ? 'published' : 'unpublished'}.` };
     } catch (error) {
         return { success: false, message: "Failed to update assignment status." };
@@ -56,9 +59,10 @@ export async function updateAssignmentStatus(id: string, status: "Published" | "
 
 export async function deleteAssignment(id: string) {
     try {
-        await deleteMockAssignment(id);
+        await dbDeleteAssignment(id);
         revalidatePath("/admin/assignments");
         revalidatePath("/student/submissions");
+        revalidatePath("/student");
         return { success: true, message: "Assignment deleted successfully." };
     } catch (error) {
         return { success: false, message: "Failed to delete assignment." };
