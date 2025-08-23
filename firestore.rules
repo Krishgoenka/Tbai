@@ -1,9 +1,27 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read and write their own user document
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // WARNING: These rules are for development purposes only and are INSECURE.
+    // They allow anyone, even unauthenticated users, to read, write, and delete
+    // data in your entire database.
+    //
+    // Before deploying your application to production, you MUST replace these
+    // with secure rules that properly restrict access based on user authentication
+    // and roles. For example:
+    //
+    // match /users/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
+    //
+    // match /assignments/{assignmentId} {
+    //   allow read: if request.auth != null; // Allow all logged-in users to read
+    //   allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; // Only admins can write
+    // }
+
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
