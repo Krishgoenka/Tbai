@@ -12,7 +12,12 @@ export default async function AssignmentsPage() {
         <h1 className="text-3xl font-bold">Assignments</h1>
         <AddAssignmentDialog />
       </div>
-      <DataTable data={assignments} columns={columns} />
+      <DataTable
+        data={assignments}
+        columns={columns}
+        filterColumn="title"
+        filterPlaceholder="Filter by title..."
+      />
     </div>
   );
 }
