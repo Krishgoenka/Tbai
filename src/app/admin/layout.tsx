@@ -16,10 +16,12 @@ export default function AdminLayout({
 }) {
   return (
     <SidebarProvider>
-      <DashboardSidebar navItems={adminNavItems} />
-      <div className="flex-1 flex flex-col">
-        <DashboardHeader />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+      <div className="flex min-h-screen">
+        <DashboardSidebar navItems={adminNavItems} />
+        <div className="flex-1 flex flex-col">
+          <DashboardHeader />
+          <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        </div>
       </div>
     </SidebarProvider>
   );

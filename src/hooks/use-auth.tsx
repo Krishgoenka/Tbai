@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const value = { user, userRole, loading, logout };
 
-  if (!isClient || loading) {
+   if (!isClient) {
     return <LoadingScreen />;
   }
 

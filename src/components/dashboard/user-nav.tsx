@@ -18,21 +18,18 @@ import { useAuth } from "@/hooks/use-auth"
 export function UserNav() {
   const { user, userRole, logout } = useAuth();
 
-  if (!user) {
-    return null;
-  }
-
   const profileLink = userRole === 'admin' ? '/admin' : '/student';
-  const displayName = user.displayName || 'Demo User';
-  const email = user.email || 'demo@example.com';
+  const displayName = user?.displayName || 'Demo User';
+  const email = user?.email || 'demo@example.com';
   const fallback = displayName ? displayName.charAt(0).toUpperCase() : "D";
+  const photoURL = user?.photoURL || `https://placehold.co/100x100.png`;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL || `https://placehold.co/100x100.png`} alt={displayName} data-ai-hint="user avatar" />
+            <AvatarImage src={photoURL} alt={displayName} data-ai-hint="user avatar" />
             <AvatarFallback>{fallback}</AvatarFallback>
           </Avatar>
         </Button>
