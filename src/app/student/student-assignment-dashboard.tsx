@@ -43,30 +43,24 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
 
 
 interface StudentAssignmentDashboardProps {
-  initialAssignments: Assignment[];
+  initialActiveAssignments: Assignment[];
+  initialPastAssignments: Assignment[];
 }
 
-export function StudentAssignmentDashboard({ initialAssignments }: StudentAssignmentDashboardProps) {
-  const [activeAssignments, setActiveAssignments] = useState<Assignment[]>([]);
-  const [pastAssignments, setPastAssignments] = useState<Assignment[]>([]);
+export function StudentAssignmentDashboard({ initialActiveAssignments, initialPastAssignments }: StudentAssignmentDashboardProps) {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    const active = initialAssignments.filter(a => new Date(a.dueDate) >= now);
-    const past = initialAssignments.filter(a => new Date(a.dueDate) < now);
-    
-    setActiveAssignments(active);
-    setPastAssignments(past);
-
-    if (initialAssignments.length > 0 && !selectedAssignment) {
-      setSelectedAssignment(active.length > 0 ? active[0] : past[0]);
-    } else if (initialAssignments.length === 0) {
+    // On initial load, select the first active assignment if it exists, otherwise the first past assignment.
+    if (initialActiveAssignments.length > 0) {
+      setSelectedAssignment(initialActiveAssignments[0]);
+    } else if (initialPastAssignments.length > 0) {
+      setSelectedAssignment(initialPastAssignments[0]);
+    } else {
         setSelectedAssignment(null);
     }
-  }, [initialAssignments, selectedAssignment]);
+  }, [initialActiveAssignments, initialPastAssignments]);
 
-  const allAssignments = [...activeAssignments, ...pastAssignments];
 
   return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -81,11 +75,11 @@ export function StudentAssignmentDashboard({ initialAssignments }: StudentAssign
                             <div>
                                 <h3 className="flex items-center gap-2 text-lg font-semibold mb-3">
                                     <CalendarCheck className="h-5 w-5 text-green-500" />
-                                    Active ({activeAssignments.length})
+                                    Active ({initialActiveAssignments.length})
                                 </h3>
                                 <div className="space-y-3">
-                                    {activeAssignments.length > 0 ? (
-                                        activeAssignments.map((assignment) => (
+                                    {initialActiveAssignments.length > 0 ? (
+                                        initialActiveAssignments.map((assignment) => (
                                             <AssignmentCard 
                                                 key={assignment.id} 
                                                 assignment={assignment} 
@@ -102,11 +96,11 @@ export function StudentAssignmentDashboard({ initialAssignments }: StudentAssign
                              <div>
                                 <h3 className="flex items-center gap-2 text-lg font-semibold mb-3">
                                     <CalendarX className="h-5 w-5 text-red-500" />
-                                    Past Due ({pastAssignments.length})
+                                    Past Due ({initialPastAssignments.length})
                                 </h3>
                                 <div className="space-y-3">
-                                    {pastAssignments.length > 0 ? (
-                                        pastAssignments.map((assignment) => (
+                                    {initialPastAssignments.length > 0 ? (
+                                        initialPastAssignments.map((assignment) => (
                                             <AssignmentCard 
                                                 key={assignment.id} 
                                                 assignment={assignment} 
