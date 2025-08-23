@@ -2,7 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
@@ -31,6 +32,34 @@ const LoadingScreen = () => (
   </div>
 );
 
+// Mock user for demo mode
+const mockUser = (role: 'admin' | 'student'): User => ({
+  uid: role === 'admin' ? 'admin-uid' : 'student-uid',
+  email: role === 'admin' ? 'admin@example.com' : 'student@example.com',
+  displayName: role === 'admin' ? 'Admin User' : 'Student User',
+  photoURL: `https://placehold.co/100x100.png`,
+  emailVerified: true,
+  isAnonymous: false,
+  metadata: {},
+  providerData: [],
+  providerId: 'password',
+  tenantId: null,
+  delete: async () => {},
+  getIdToken: async () => '',
+  getIdTokenResult: async () => ({
+    token: '',
+    expirationTime: '',
+    authTime: '',
+    issuedAtTime: '',
+    signInProvider: null,
+    signInSecondFactor: null,
+    claims: {},
+  }),
+  reload: async () => {},
+  toJSON: () => ({}),
+});
+
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -43,74 +72,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-              const role = userDoc.data().role as UserRole;
-              setUser(user);
-              setUserRole(role);
-            } else {
-              // New user from Google Sign-In, create their profile document
-              // Default new signups to student, unless it's a designated admin email
-              const role: UserRole = user.email === 'goenkakrish@gmail.com' ? 'admin' : 'student';
-
-              const newUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName || user.email?.split('@')[0],
-                role: role,
-              };
-              await setDoc(userDocRef, newUser);
-              setUser(user);
-              setUserRole(role);
-            }
-        } catch (e) {
-            console.error("Error fetching user role:", e);
-            await auth.signOut();
-            setUser(null);
-            setUserRole(null);
-        }
-      } else {
-        setUser(null);
-        setUserRole(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
-    if (!isClient || loading) return;
+    // This is the demo mode setup
+    if (!isClient) return;
 
-    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
-    const isHomePage = pathname === '/';
-    const isStudentPage = pathname.startsWith('/student');
-    const isAdminPage = pathname.startsWith('/admin');
+    const isAdminPath = pathname.startsWith('/admin');
+    const isStudentPath = pathname.startsWith('/student');
 
-    if (user) {
-      if (userRole === 'admin' && (isStudentPage)) {
-        router.push('/admin');
-      } else if (userRole === 'student' && (isAdminPage)) {
-        router.push('/student');
-      } else if (isAuthPage) {
-         router.push(userRole === 'admin' ? '/admin' : '/student');
-      }
+    if (isAdminPath) {
+      setUser(mockUser('admin'));
+      setUserRole('admin');
+    } else if (isStudentPath) {
+      setUser(mockUser('student'));
+      setUserRole('student');
     } else {
-      if (isAdminPage || isStudentPage) {
-        router.push('/login');
-      }
+       setUser(null);
+       setUserRole(null);
     }
+    setLoading(false);
 
-  }, [isClient, user, userRole, loading, router, pathname]);
+  }, [isClient, pathname]);
 
   const logout = async () => {
-    await auth.signOut();
-    router.push('/login');
+    // In demo mode, just redirect to home
+    router.push('/');
   };
   
   const value = { user, userRole, loading, logout };

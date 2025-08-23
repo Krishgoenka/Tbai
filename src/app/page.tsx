@@ -11,14 +11,6 @@ export default function Home() {
           <Bot className="h-8 w-8 text-primary" />
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
-        <div className="flex items-center gap-4">
-           <Button asChild variant="outline">
-              <Link href="/login">
-                <LogIn className="mr-2"/>
-                Login
-              </Link>
-          </Button>
-        </div>
       </header>
 
       <main className="flex-1">
@@ -31,15 +23,15 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
-              <Link href="/signup/student">
+              <Link href="/student">
                 <UserPlus className="mr-2"/>
-                Student Signup
+                Student Section
               </Link>
             </Button>
              <Button size="lg" variant="secondary" asChild>
-              <Link href="/signup/admin">
+              <Link href="/admin">
                 <UserCog className="mr-2"/>
-                Admin Signup
+                Admin Section
               </Link>
             </Button>
           </div>
