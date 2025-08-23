@@ -87,6 +87,7 @@ export function AddAssignmentDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
         if (submittingStatus === 'idle') {
+            form.reset();
             setIsOpen(open);
         }
     }}>

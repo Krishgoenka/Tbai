@@ -11,7 +11,7 @@ const assignmentsCollection = collection(db, 'assignments');
 const mockAssignments: Assignment[] = [
     {
         id: "ASN001",
-        title: "Calculus I: Problem Set 3",
+        title: "one pircr",
         description: "Complete problems 1-10 on page 53 of the textbook. Show all work for full credit. Submissions must be a single PDF file.",
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Due in 7 days
         status: "Published",
@@ -20,7 +20,7 @@ const mockAssignments: Assignment[] = [
     },
     {
         id: "ASN002",
-        title: "History of Ancient Rome: Essay",
+        title: "one piece is real",
         description: "Write a 5-page essay on the impact of the Punic Wars on Roman expansion. Use at least 3 academic sources.",
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // Due in 14 days
         status: "Published",
@@ -46,28 +46,27 @@ type AddAssignmentData = Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>;
 export async function getAssignments(options?: { publishedOnly?: boolean }): Promise<Assignment[]> {
   // Returning mock data for now to ensure UI stability.
   // In a real application, you would remove this and use the Firestore logic below.
-  if (options?.publishedOnly) {
-    return mockAssignments.filter(a => a.status === "Published");
+  if (process.env.NODE_ENV === 'development') {
+    if (options?.publishedOnly) {
+        return mockAssignments.filter(a => a.status === "Published");
+    }
+    return mockAssignments;
   }
-  return mockAssignments;
   
-  /*
-  // --- Real Firestore Logic (currently bypassed) ---
+  // --- Real Firestore Logic ---
   try {
     let q;
     if (options?.publishedOnly) {
-       q = query(assignmentsCollection, where("status", "==", "Published"));
+       q = query(assignmentsCollection, where("status", "==", "Published"), orderBy("dueDate", "desc"));
     } else {
-      q = query(assignmentsCollection);
+      q = query(assignmentsCollection, orderBy("dueDate", "desc"));
     }
     
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
-    // Ensure submissions field exists and sort by due date
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
-    validatedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
-
+    
     return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
     console.error("Error fetching assignments: ", error);
@@ -76,13 +75,23 @@ export async function getAssignments(options?: { publishedOnly?: boolean }): Pro
     }
     return [];
   }
-  */
 }
 
 export async function addAssignment(
     assignmentData: AddAssignmentData, 
     file?: File
 ) {
+    if (process.env.NODE_ENV === 'development') {
+        const newId = `ASN${String(Math.random()).slice(2, 5)}`;
+        const newAssignment: Assignment = {
+            id: newId,
+            ...assignmentData,
+            submissions: 0,
+            fileUrl: file ? URL.createObjectURL(file) : "/placeholder.pdf",
+        };
+        mockAssignments.unshift(newAssignment);
+        return newAssignment;
+    }
     try {
         let fileUrl = "/placeholder.pdf"; // Default placeholder
 
