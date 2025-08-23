@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 const adminNavItems = [
   { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/admin/employees", label: "Employees", icon: "Users" },
+  { href: "/admin/assignments", label: "Assignments", icon: "Book" },
   { href: "/admin/submissions", label: "Submissions", icon: "BookCheck" },
 ];
 
