@@ -32,7 +32,6 @@ interface EditAssignmentDialogProps {
 }
 
 const formSchema = assignmentSchema.omit({ submissions: true, fileUrl: true }).extend({
-    dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
     file: z.any().optional(),
 });
@@ -44,17 +43,21 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
 
     const defaultValues = useMemo(() => {
         try {
-            const [date, time] = new Date(assignment.dueDate).toISOString().split('T');
+            const date = new Date(assignment.dueDate);
+            const dateString = date.toISOString().split('T')[0];
+            const timeString = date.toTimeString().slice(0, 5);
             return {
                 ...assignment,
-                dueDate: date,
-                dueTime: time ? time.slice(0, 5) : "23:59",
+                dueDate: dateString,
+                dueTime: timeString,
             }
         } catch(e) {
+            console.error("Error parsing date:", e);
+            const fallbackDate = new Date();
             return {
                  ...assignment,
-                dueDate: new Date(assignment.dueDate).toISOString().split('T')[0],
-                dueTime: "23:59",
+                dueDate: fallbackDate.toISOString().split('T')[0],
+                dueTime: fallbackDate.toTimeString().slice(0,5),
             }
         }
     }, [assignment]);
@@ -68,7 +71,10 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
         const result = await updateAssignment({
-           ...values,
+           id: values.id,
+           title: values.title,
+           description: values.description,
+           status: values.status,
            dueDate: new Date(combinedDueDate).toISOString(),
         });
 
@@ -77,9 +83,8 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
                 title: "Success",
                 description: "Assignment has been successfully updated.",
             });
-            form.reset();
             onOpenChange(false);
-            router.refresh();
+            // No router.refresh() needed, revalidatePath in action handles it
         } else {
              toast({
                 title: "Error",
@@ -139,9 +144,10 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
                                 control={form.control}
                                 name="dueDate"
                                 render={({ field }) => (
-                                    <FormItem>
+                                     <FormItem>
                                         <FormControl>
-                                            <Input type="date" {...field} />
+                                             {/* The value needs to be formatted as yyyy-mm-dd for the input */}
+                                            <Input type="date" {...field} value={field.value.split('T')[0]} />
                                         </FormControl>
                                          <FormMessage />
                                     </FormItem>

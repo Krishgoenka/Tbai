@@ -25,9 +25,12 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { assignmentSchema } from "./schema"
 
-const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true }).extend({
+// This schema is for form validation. It includes fields that are not in the database model.
+const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true }).extend({
     dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
+    title: z.string().min(3, "Title is required."),
+    description: z.string().min(10, "Description is required."),
     // Allow file to be optional
     file: z.any().optional(),
 });
@@ -45,17 +48,19 @@ export function AddAssignmentDialog() {
             description: "",
             dueDate: "",
             dueTime: "23:59",
-            status: "Draft",
         },
     });
 
+    // This function is called when the user clicks "Save as Draft" or "Publish"
     async function onSubmit(values: z.infer<typeof formSchema>, status: "Draft" | "Published") {
+        // Combine date and time into a single ISO string for the database
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
         const result = await addAssignment({
-           ...values,
+           title: values.title,
+           description: values.description,
            dueDate: new Date(combinedDueDate).toISOString(),
-           status: status,
+           status: status, // Set the status based on the button clicked
         });
 
         if (result.success) {
@@ -65,7 +70,7 @@ export function AddAssignmentDialog() {
             });
             form.reset();
             setIsOpen(false);
-            router.refresh(); // Reload the page to show the new assignment
+            // router.refresh() is not needed here because revalidatePath is called in the action
         } else {
              toast({
                 title: "Error",
@@ -86,6 +91,7 @@ export function AddAssignmentDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[475px]">
          <Form {...form}>
+            {/* We don't use a form onSubmit here because we have two separate submit buttons */}
             <form>
                 <DialogHeader>
                 <DialogTitle>Add New Assignment</DialogTitle>
@@ -103,7 +109,7 @@ export function AddAssignmentDialog() {
                                 <FormControl>
                                     <Input placeholder="e.g. Calculus Homework 3" className="col-span-3" {...field} />
                                 </FormControl>
-                                <FormMessage className="col-span-4" />
+                                <FormMessage className="col-span-4 pl-[25%]" />
                             </FormItem>
                         )}
                     />
@@ -116,7 +122,7 @@ export function AddAssignmentDialog() {
                                 <FormControl>
                                     <Textarea placeholder="Assignment details..." className="col-span-3" {...field} />
                                 </FormControl>
-                                <FormMessage className="col-span-4" />
+                                <FormMessage className="col-span-4 pl-[25%]" />
                             </FormItem>
                         )}
                     />
@@ -166,8 +172,9 @@ export function AddAssignmentDialog() {
                     />
                 </div>
                 <DialogFooter>
-                    <Button variant="secondary" onClick={form.handleSubmit((data) => onSubmit(data, "Draft"))}>Save as Draft</Button>
-                    <Button type="submit" onClick={form.handleSubmit((data) => onSubmit(data, "Published"))}>Publish</Button>
+                    {/* Use form.handleSubmit to trigger validation before calling our onSubmit function */}
+                    <Button type="button" variant="secondary" onClick={form.handleSubmit((data) => onSubmit(data, "Draft"))}>Save as Draft</Button>
+                    <Button type="button" onClick={form.handleSubmit((data) => onSubmit(data, "Published"))}>Publish</Button>
                 </DialogFooter>
             </form>
         </Form>
