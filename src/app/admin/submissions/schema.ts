@@ -6,7 +6,8 @@ export const submissionSchema = z.object({
   studentEmail: z.string().email(),
   submissionDate: z.string(),
   assignmentTitle: z.string(),
-  fileUrl: z.string().url().or(z.string().startsWith("/")), // Allow placeholder URLs
+  fileUrl: z.string().url().or(z.string().startsWith("/")),
+  score: z.number().optional(),
 })
 
 export type Submission = z.infer<typeof submissionSchema>

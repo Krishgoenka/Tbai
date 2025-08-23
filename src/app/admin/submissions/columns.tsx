@@ -5,9 +5,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Submission } from "./schema"
 import { DataTableColumnHeader } from "../employees/data-table-column-header"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ExternalLink } from "lucide-react"
+import { DataTableRowActions } from "./data-table-row-actions"
+import { Badge } from "@/components/ui/badge"
+
 
 export const columns: ColumnDef<Submission>[] = [
   {
@@ -38,12 +38,6 @@ export const columns: ColumnDef<Submission>[] = [
       <DataTableColumnHeader column={column} title="Student Name" />
     ),
   },
-  {
-    accessorKey: "studentEmail",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Student Email" />
-    ),
-  },
     {
     accessorKey: "assignmentTitle",
     header: ({ column }) => (
@@ -57,17 +51,21 @@ export const columns: ColumnDef<Submission>[] = [
     ),
   },
   {
-    id: "actions",
-    header: "View",
-    cell: ({ row }) => {
-        const submission = row.original
-        return (
-            <Button variant="ghost" size="icon" asChild>
-                <Link href={submission.fileUrl} target="_blank">
-                    <ExternalLink className="h-4 w-4" />
-                </Link>
-            </Button>
-        )
+    accessorKey: "score",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Score" />
+    ),
+     cell: ({ row }) => {
+      const score = row.getValue("score") as number | undefined;
+      if (score === undefined || score === null) {
+        return <Badge variant="secondary">Not Graded</Badge>
+      }
+      const color = score >= 90 ? "bg-green-500" : score >= 80 ? "bg-blue-500" : score >= 70 ? "bg-yellow-500" : "bg-red-500";
+      return <Badge className={`text-white ${color}`}>{score}</Badge>
     }
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ]
