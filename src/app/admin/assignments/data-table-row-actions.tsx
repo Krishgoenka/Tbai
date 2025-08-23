@@ -28,7 +28,6 @@ import { EditAssignmentDialog } from "./edit-assignment-dialog"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { deleteAssignment, updateAssignmentStatus } from "./actions"
-import { useRouter } from "next/navigation"
 
 
 interface DataTableRowActionsProps<TData> {
@@ -42,7 +41,6 @@ export function DataTableRowActions<TData>({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
 
   const handleStatusChange = async (status: "Published" | "Draft") => {
@@ -52,7 +50,6 @@ export function DataTableRowActions<TData>({
                 title: "Success",
                 description: result.message,
             });
-            router.refresh();
         } else {
              toast({
                 title: "Error",
@@ -70,7 +67,6 @@ export function DataTableRowActions<TData>({
             description: result.message,
         });
         setIsDeleteDialogOpen(false);
-        router.refresh();
     } else {
             toast({
             title: "Error",
