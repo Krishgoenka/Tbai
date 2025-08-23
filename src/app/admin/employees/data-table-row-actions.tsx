@@ -28,7 +28,6 @@ import { EditEmployeeDialog } from "./edit-employee-dialog"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { deleteEmployee } from "./actions"
-import { useRouter } from "next/navigation"
 
 
 interface DataTableRowActionsProps<TData> {
@@ -43,7 +42,6 @@ export function DataTableRowActions<TData>({
   const [isTasksDialogOpen, setIsTasksDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
 
   const handleDelete = async () => {
@@ -54,7 +52,6 @@ export function DataTableRowActions<TData>({
             description: result.message,
         });
         setIsDeleteDialogOpen(false);
-        router.refresh();
     } else {
             toast({
             title: "Error",
