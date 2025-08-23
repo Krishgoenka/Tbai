@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Star, TrendingUp, TrendingDown, PlusCircle } from 'lucide-react';
 import { AddSubmissionDialog } from './add-submission-dialog';
+import { Label } from "@/components/ui/label";
 
 const allSubmissions: Submission[] = [
     {
