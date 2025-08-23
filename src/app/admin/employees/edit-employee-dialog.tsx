@@ -22,7 +22,6 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { updateEmployee } from "./actions"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
 
 interface EditEmployeeDialogProps {
     employee: Employee;
@@ -36,7 +35,6 @@ const formSchema = employeeSchema.omit({ tasks: true, id: true });
 
 export function EditEmployeeDialog({ employee, children, open, onOpenChange }: EditEmployeeDialogProps) {
     const { toast } = useToast();
-    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -57,7 +55,6 @@ export function EditEmployeeDialog({ employee, children, open, onOpenChange }: E
             });
             form.reset();
             onOpenChange(false);
-            router.refresh();
         } else {
              toast({
                 title: "Error",

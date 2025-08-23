@@ -1,8 +1,9 @@
 
 import { z } from 'zod';
 import { assignmentSchema, type Assignment } from '@/app/admin/assignments/schema';
-import { db } from './firebase';
+import { db, storage } from './firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, increment } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const assignmentsCollection = collection(db, 'assignments');
 
@@ -10,23 +11,18 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
   try {
     let q;
     if (options?.publishedOnly) {
-      // First, query by status. We will sort later in code.
       q = query(assignmentsCollection, where("status", "==", "Published"));
     } else {
-      // Default query for admin view, ordered by due date.
-      q = query(assignmentsCollection, orderBy("dueDate", "desc"));
+      q = query(assignmentsCollection);
     }
     
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
-    // Ensure submissions field exists, default to 0 if not
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
 
-    // If we only fetched published assignments, sort them now by due date descending.
-    if (options?.publishedOnly) {
-      validatedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
-    }
+    // Sort by due date after fetching, descending (newest first)
+    validatedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
 
     return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
@@ -35,12 +31,23 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
   }
 }
 
-export async function addAssignment(assignment: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>) {
+export async function addAssignment(
+    assignmentData: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>, 
+    file?: File
+) {
     try {
+        let fileUrl = "/placeholder.pdf"; // Default placeholder
+
+        if (file) {
+            const storageRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            fileUrl = await getDownloadURL(snapshot.ref);
+        }
+
         const newAssignment: Omit<Assignment, 'id'> = {
-            ...assignment,
+            ...assignmentData,
             submissions: 0,
-            fileUrl: "/placeholder.pdf", // Placeholder
+            fileUrl: fileUrl,
         };
         const docRef = await addDoc(assignmentsCollection, newAssignment);
         return { ...newAssignment, id: docRef.id };

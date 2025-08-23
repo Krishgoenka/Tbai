@@ -23,7 +23,6 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
 import { addTask, deleteTask } from "./actions"
 
 interface ManageTasksDialogProps {
@@ -38,7 +37,6 @@ const formSchema = taskSchema.omit({ id: true });
 
 function TaskItem({ task, employeeId }: { task: Task, employeeId: string }) {
   const { toast } = useToast();
-  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -54,7 +52,6 @@ function TaskItem({ task, employeeId }: { task: Task, employeeId: string }) {
     const result = await deleteTask(employeeId, task.id);
     if (result.success) {
       toast({ title: "Success", description: "Task deleted." });
-      router.refresh();
     } else {
       toast({ title: "Error", description: result.message, variant: "destructive" });
     }
@@ -78,7 +75,6 @@ function TaskItem({ task, employeeId }: { task: Task, employeeId: string }) {
 
 export function ManageTasksDialog({ employee, children, open, onOpenChange }: ManageTasksDialogProps) {
     const { toast } = useToast();
-    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -97,7 +93,6 @@ export function ManageTasksDialog({ employee, children, open, onOpenChange }: Ma
                 description: "New task added successfully.",
             });
             form.reset();
-            router.refresh();
         } else {
              toast({
                 title: "Error",

@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import { useState, useEffect } from "react";
@@ -14,6 +13,7 @@ import type { Assignment } from "@/app/admin/assignments/schema";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { submitAssignment } from "./actions";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -55,9 +55,9 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // On initial load, select the first active assignment if it exists, otherwise the first past assignment.
     if (initialActiveAssignments.length > 0) {
       setSelectedAssignment(initialActiveAssignments[0]);
     } else if (initialPastAssignments.length > 0) {
@@ -76,12 +76,12 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
   };
 
   const handleSubmit = async () => {
-    if (!selectedAssignment) {
-      toast({ title: "Error", description: "Please select an assignment first.", variant: "destructive" });
-      return;
-    }
-    if (!selectedFile) {
-      toast({ title: "Error", description: "Please select a file to upload.", variant: "destructive" });
+    if (!selectedAssignment || !selectedFile || !user) {
+      toast({ 
+          title: "Error", 
+          description: "Please select an assignment, choose a file, and make sure you are logged in.", 
+          variant: "destructive" 
+      });
       return;
     }
     
@@ -90,12 +90,13 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
     const result = await submitAssignment({
       assignmentId: selectedAssignment.id,
       assignmentTitle: selectedAssignment.title,
-    });
+      studentName: user.displayName || "Anonymous",
+      studentEmail: user.email || "no-email",
+    }, selectedFile);
 
     if (result.success) {
       toast({ title: "Success!", description: result.message });
       setSelectedFile(null);
-      // Optionally reset the file input visually
       const fileInput = document.getElementById("assignment-file") as HTMLInputElement;
       if(fileInput) fileInput.value = "";
     } else {
@@ -216,7 +217,7 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                         Allowed types: PDF, JPG, PNG, MP4, PY, C, CPP, IPYNB, CSV.
                                     </p>
                                 </div>
-                                <Button onClick={handleSubmit} disabled={isSubmitting || !selectedFile}>
+                                <Button onClick={handleSubmit} disabled={isSubmitting || !selectedFile || new Date(selectedAssignment.dueDate) < new Date()}>
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -229,6 +230,9 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                         </>
                                     )}
                                 </Button>
+                                {new Date(selectedAssignment.dueDate) < new Date() && (
+                                    <p className="text-sm text-red-500">This assignment is past due. Submissions are closed.</p>
+                                )}
                              </div>
                         </div>
 

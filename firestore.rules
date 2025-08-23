@@ -2,11 +2,62 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: These rules are insecure and are for development purposes only.
-    // They allow read and write access to your entire database.
-    // You must secure your database before deploying to production.
+    
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user's role from the 'users' collection
+    function getUserRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    }
+
+    // Rules for the 'users' collection
+    match /users/{userId} {
+      // Allow users to read their own document to get their role
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      // Allow users to create their own user document upon signup
+      allow create: if isAuthenticated();
+      // Allow users to update their own profile info, but not their role
+      allow update: if isAuthenticated() && request.auth.uid == userId && !("role" in request.resource.data);
+    }
+
+    // Rules for the 'employees' collection
+    match /employees/{employeeId} {
+      // Only admins can read, create, update, or delete employee data
+      allow read, write: if isAuthenticated() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // Rules for the 'assignments' collection
+    match /assignments/{assignmentId} {
+      // Admins can perform any action on assignments
+      allow create, update, delete: if isAuthenticated() && getUserRole(request.auth.uid) == 'admin';
+      
+      // Students can only read published assignments
+      allow read: if isAuthenticated() && (
+        (getUserRole(request.auth.uid) == 'student' && resource.data.status == 'Published') ||
+        (getUserRole(request.auth.uid) == 'admin')
+      );
+    }
+    
+    // Rules for the 'submissions' collection
+    match /submissions/{submissionId} {
+      // Admins can read all submissions
+      allow read: if isAuthenticated() && getUserRole(request.auth.uid) == 'admin';
+      
+      // Students can create submissions for themselves
+      allow create: if isAuthenticated() && 
+                     getUserRole(request.auth.uid) == 'student' &&
+                     request.resource.data.studentEmail == request.auth.token.email;
+                     
+      // Admins can update submissions (e.g., to add a score)
+      allow update: if isAuthenticated() && getUserRole(request.auth.uid) == 'admin';
+    }
+    
+    // Default deny all other reads/writes
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

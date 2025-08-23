@@ -1,9 +1,34 @@
+
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Users, GraduationCap, UserPlus, UserCog, LogIn } from "lucide-react";
+import { Bot, Users, GraduationCap, LogIn, UserPlus, UserCog } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { user, userRole, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user && userRole) {
+      router.push(userRole === 'admin' ? '/admin' : '/student');
+    }
+  }, [user, userRole, loading, router]);
+
+
+  // If loading or redirecting, show a simple loading state or nothing
+  if (loading || (user && userRole)) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -11,6 +36,14 @@ export default function Home() {
           <Bot className="h-8 w-8 text-primary" />
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
+        <nav className="flex items-center gap-4">
+            <Button variant="ghost" asChild>
+                <Link href="/login">Login</Link>
+            </Button>
+            <Button asChild>
+                <Link href="/signup">Sign Up</Link>
+            </Button>
+        </nav>
       </header>
 
       <main className="flex-1">
@@ -23,15 +56,15 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
-              <Link href="/student">
+              <Link href="/signup/student">
                 <UserPlus className="mr-2"/>
-                Student Section
+                Get Started as a Student
               </Link>
             </Button>
              <Button size="lg" variant="secondary" asChild>
-              <Link href="/admin">
+              <Link href="/signup/admin">
                 <UserCog className="mr-2"/>
-                Admin Section
+                Get Started as an Admin
               </Link>
             </Button>
           </div>

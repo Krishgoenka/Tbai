@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,31 +10,61 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { updateProfile } from "firebase/auth";
 
 export default function AdminProfilePage() {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const { toast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
 
-    // Mock data state
-    const [name, setName] = useState(user?.displayName || "Admin User");
-    const [email, setEmail] = useState(user?.email || "admin@example.com");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
 
-    const handleSave = () => {
-        // In a real app, you would call a server action to update the user's data.
-        console.log("Saving data:", { name, email });
-        toast({
-            title: "Success",
-            description: "Profile updated successfully.",
-        });
-        setIsEditing(false);
+    useEffect(() => {
+        if (user) {
+            setName(user.displayName || "");
+            setEmail(user.email || "");
+        }
+    }, [user]);
+
+    const handleSave = async () => {
+        if (!user) return;
+
+        try {
+            // Update Firebase Auth profile
+            await updateProfile(user, { displayName: name });
+            
+            // Update Firestore user document
+            const userDocRef = doc(db, 'users', user.uid);
+            await updateDoc(userDocRef, { displayName: name });
+            
+            toast({
+                title: "Success",
+                description: "Profile updated successfully.",
+            });
+            setIsEditing(false);
+        } catch (error) {
+             toast({
+                title: "Error",
+                description: "Failed to update profile.",
+                variant: "destructive"
+            });
+            console.error("Profile update error:", error);
+        }
     };
 
     const handleCancel = () => {
-        // Reset fields to original values
-        setName(user?.displayName || "Admin User");
-        setEmail(user?.email || "admin@example.com");
+        if (user) {
+            setName(user.displayName || "");
+            setEmail(user.email || "");
+        }
         setIsEditing(false);
+    }
+
+    if (loading || !user) {
+        return <p>Loading profile...</p>
     }
 
   return (
@@ -67,7 +97,7 @@ export default function AdminProfilePage() {
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={!isEditing} />
+                    <Input id="email" type="email" value={email} disabled />
                 </div>
                 {isEditing && (
                     <div className="flex justify-end gap-2">

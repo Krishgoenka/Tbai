@@ -6,33 +6,31 @@ import { revalidatePath } from "next/cache";
 import { addSubmission } from "@/lib/submission-data";
 import { db } from "@/lib/firebase";
 import { doc, increment, updateDoc } from "firebase/firestore";
+import { auth } from "@/lib/firebase";
 
 const submissionSchema = z.object({
     assignmentId: z.string(),
     assignmentTitle: z.string(),
+    studentName: z.string(),
+    studentEmail: z.string().email(),
 });
 
-export async function submitAssignment(data: z.infer<typeof submissionSchema>) {
-    // Since auth is disabled, we'll use mock student data.
-    // In a real app, this would come from the authenticated user session.
-    const student = {
-        name: "Student User",
-        email: "student@example.com",
-    };
-
+export async function submitAssignment(
+    data: z.infer<typeof submissionSchema>,
+    file: File
+) {
     try {
         const validatedData = submissionSchema.parse(data);
 
         // 1. Add the submission to the 'submissions' collection
         await addSubmission({
-            studentName: student.name,
-            studentEmail: student.email,
+            studentName: validatedData.studentName,
+            studentEmail: validatedData.studentEmail,
             assignmentId: validatedData.assignmentId,
             assignmentTitle: validatedData.assignmentTitle,
             submissionDate: new Date().toISOString(),
-            fileUrl: "/placeholder.pdf", // Placeholder URL for now
             // Score is omitted, will be added during grading
-        });
+        }, file);
         
         // 2. Increment the submission count on the assignment document
         const assignmentRef = doc(db, 'assignments', validatedData.assignmentId);
@@ -52,6 +50,6 @@ export async function submitAssignment(data: z.infer<typeof submissionSchema>) {
         if (error instanceof z.ZodError) {
             return { success: false, message: error.errors.map(e => e.message).join(", ") };
         }
-        return { success: false, message: "An unknown error occurred." };
+        return { success: false, message: "An unknown error occurred during submission." };
     }
 }

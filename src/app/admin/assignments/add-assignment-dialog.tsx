@@ -25,13 +25,12 @@ import { useState } from "react"
 import { assignmentSchema } from "./schema"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// This schema is for form validation. It includes fields that are not in the database model.
 const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, dueDate: true }).extend({
     dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
     title: z.string().min(3, "Title is required."),
     description: z.string().min(10, "Description is required."),
-    file: z.any().optional(),
+    file: z.instanceof(File).optional(),
 });
 
 
@@ -46,18 +45,20 @@ export function AddAssignmentDialog() {
             description: "",
             dueDate: "",
             dueTime: "23:59",
-            status: "Draft", // Default to Draft
+            status: "Draft",
         },
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Combine date and time into a single ISO string for the database
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
-        const result = await addAssignment({
+        const assignmentData = {
            ...values,
            dueDate: new Date(combinedDueDate).toISOString(),
-        });
+        };
+        
+        // The file is already in the `values` object if selected.
+        const result = await addAssignment(assignmentData, values.file);
 
         if (result.success) {
             toast({
@@ -175,11 +176,18 @@ export function AddAssignmentDialog() {
                     <FormField
                         control={form.control}
                         name="file"
-                        render={({ field }) => (
+                        render={({ field: { onChange, value, ...rest } }) => (
                             <FormItem className="grid grid-cols-4 items-center gap-4">
                                 <FormLabel className="text-right">PDF File</FormLabel>
                                 <FormControl>
-                                    <Input id="file" type="file" accept=".pdf" className="col-span-3" onChange={(e) => field.onChange(e.target.files)} />
+                                    <Input 
+                                        id="file" 
+                                        type="file" 
+                                        accept=".pdf,.png,.jpg,.jpeg" 
+                                        className="col-span-3" 
+                                        onChange={(e) => onChange(e.target.files?.[0])}
+                                        {...rest}
+                                    />
                                 </FormControl>
                                 <FormMessage className="col-span-4" />
                             </FormItem>

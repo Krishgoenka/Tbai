@@ -5,6 +5,7 @@ import { z } from "zod"
 import { assignmentSchema } from "./schema"
 import { addAssignment as dbAddAssignment, updateAssignment as dbUpdateAssignment, deleteAssignment as dbDeleteAssignment, updateAssignmentStatus as dbUpdateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
+import { revalidate } from "@/app/admin/assignments/page"
 
 // This schema is what the form provides to the action. It includes status.
 const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true });
@@ -12,15 +13,12 @@ const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: t
 const updateAssignmentFormSchema = assignmentSchema.omit({ submissions: true, fileUrl: true });
 
 
-export async function addAssignment(data: z.infer<typeof addAssignmentFormSchema>) {
+export async function addAssignment(data: z.infer<typeof addAssignmentFormSchema>, file?: File) {
     try {
-        // The form now provides the status, so we can validate it directly.
         const validatedData = addAssignmentFormSchema.parse(data);
 
-        // The data is valid, proceed to add it to the database.
-        await dbAddAssignment(validatedData);
+        await dbAddAssignment(validatedData, file);
 
-        // Revalidate paths to update the UI across the app
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
         return { success: true, message: "Assignment added successfully." };
