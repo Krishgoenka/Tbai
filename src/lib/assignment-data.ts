@@ -1,12 +1,14 @@
-import { z } from 'zod';
-import { assignmentSchema } from '@/app/admin/assignments/schema';
 
-const assignmentsData = [
+import { z } from 'zod';
+import { assignmentSchema, type Assignment } from '@/app/admin/assignments/schema';
+
+// This is acting as our in-memory database for the demo.
+let assignmentsData: Assignment[] = [
   {
     id: "ASN001",
     title: "Calculus Homework 3",
     description: "Complete exercises 1-10 on page 50 of the textbook. Show all your work for full credit. The topics covered include derivatives and integration.",
-    dueDate: "2024-09-01",
+    dueDate: "2024-09-01T23:59",
     fileUrl: "/placeholder.pdf",
     status: "Published",
     submissions: 15,
@@ -15,7 +17,7 @@ const assignmentsData = [
     id: "ASN002",
     title: "History Essay: The Roman Empire",
     description: "Write a 5-page essay on the fall of the Roman Empire. Your essay should have a clear thesis statement, supporting arguments, and a conclusion. Please cite your sources using MLA format.",
-    dueDate: "2024-09-10",
+    dueDate: "2024-09-10T23:59",
     fileUrl: "/placeholder.pdf",
     status: "Published",
     submissions: 8,
@@ -24,7 +26,7 @@ const assignmentsData = [
     id: "ASN003",
     title: "Physics Lab Report",
     description: "Submit the lab report for the 'Gravity and Motion' experiment. Include your hypothesis, methodology, data, analysis, and conclusion. The report should be no more than 10 pages.",
-    dueDate: "2024-08-25",
+    dueDate: "2024-08-25T23:59",
     fileUrl: "/placeholder.pdf",
     status: "Published",
     submissions: 20,
@@ -33,7 +35,7 @@ const assignmentsData = [
     id: "ASN004",
     title: "Python Programming Challenge",
     description: "Write a Python script that sorts a list of 1 million integers using the Merge Sort algorithm. Your script will be tested for correctness and performance. Submit your .py file.",
-    dueDate: "2024-09-15",
+    dueDate: "2024-09-15T23:59",
     fileUrl: "/placeholder.pdf",
     status: "Draft",
     submissions: 0,
@@ -41,7 +43,6 @@ const assignmentsData = [
 ];
 
 export async function getAssignments(options?: { publishedOnly?: boolean }) {
-  // In a real app, you would fetch this from a database.
   // We use a promise to simulate async behavior.
   let data = z.array(assignmentSchema).parse(assignmentsData);
 
@@ -50,4 +51,17 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
   }
   
   return Promise.resolve(data);
+}
+
+export async function addMockAssignment(assignment: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>) {
+    const newId = `ASN${String(assignmentsData.length + 1).padStart(3, '0')}`;
+    const newAssignment: Assignment = {
+        ...assignment,
+        id: newId,
+        submissions: 0,
+        fileUrl: "/placeholder.pdf", // Placeholder since we don't handle file uploads yet
+    };
+    const validatedAssignment = assignmentSchema.parse(newAssignment);
+    assignmentsData.unshift(validatedAssignment); // Add to the beginning of the list
+    return validatedAssignment;
 }
