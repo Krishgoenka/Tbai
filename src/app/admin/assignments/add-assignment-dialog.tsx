@@ -54,7 +54,7 @@ export function AddAssignmentDialog() {
 
         const result = await addAssignment({
            ...values,
-           dueDate: combinedDueDate,
+           dueDate: new Date(combinedDueDate).toISOString(),
            status: status,
         });
 

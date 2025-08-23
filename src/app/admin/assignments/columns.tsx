@@ -1,3 +1,4 @@
+
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
@@ -53,6 +54,10 @@ export const columns: ColumnDef<Assignment>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Due Date" />
     ),
+    cell: ({ row }) => {
+        const date = row.getValue("dueDate") as string;
+        return <span>{new Date(date).toLocaleString()}</span>
+    }
   },
   {
     accessorKey: "submissions",

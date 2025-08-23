@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react";
@@ -12,20 +13,34 @@ import { getAssignments } from "@/lib/assignment-data";
 import type { Assignment } from "@/app/admin/assignments/schema";
 import { AssignmentCard } from "./assignment-card";
 
-// Mock fetching assignments - in a real app this would be an API call
-const assignmentsPromise = getAssignments({ publishedOnly: true });
-
 export default function StudentSubmissionsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    assignmentsPromise.then(data => {
+    // Fetch assignments inside useEffect to get fresh data on component mount/update
+    const fetchAssignments = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getAssignments({ publishedOnly: true });
         setAssignments(data);
+        // Set the first assignment as selected by default if it exists
         if (data.length > 0) {
+          if (!selectedAssignment || !data.find(a => a.id === selectedAssignment.id)) {
             setSelectedAssignment(data[0]);
+          }
+        } else {
+          setSelectedAssignment(null);
         }
-    });
+      } catch (error) {
+        console.error("Failed to fetch assignments:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchAssignments();
   }, []);
 
   return (
@@ -41,7 +56,9 @@ export default function StudentSubmissionsPage() {
                 <CardContent>
                     <ScrollArea className="h-[450px]">
                         <div className="space-y-4">
-                            {assignments.length > 0 ? (
+                            {isLoading ? (
+                                <p className="text-sm text-muted-foreground text-center p-4">Loading assignments...</p>
+                            ) : assignments.length > 0 ? (
                                 assignments.map((assignment) => (
                                     <AssignmentCard 
                                         key={assignment.id} 
@@ -67,7 +84,7 @@ export default function StudentSubmissionsPage() {
                     {selectedAssignment ? (
                         <>
                             <CardTitle>{selectedAssignment.title}</CardTitle>
-                            <CardDescription>Due Date: {selectedAssignment.dueDate}</CardDescription>
+                            <CardDescription>Due Date: {new Date(selectedAssignment.dueDate).toLocaleString()}</CardDescription>
                         </>
                     ) : (
                          <CardTitle>Select an Assignment</CardTitle>
@@ -91,6 +108,7 @@ export default function StudentSubmissionsPage() {
                                         <FileText className="mr-2 h-4 w-4" />
                                         View Attached PDF
                                     </a>
+
                                 </Button>
                             </div>
                         )}

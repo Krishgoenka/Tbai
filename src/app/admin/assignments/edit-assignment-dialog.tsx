@@ -44,7 +44,7 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
 
     const defaultValues = useMemo(() => {
         try {
-            const [date, time] = assignment.dueDate.split('T');
+            const [date, time] = new Date(assignment.dueDate).toISOString().split('T');
             return {
                 ...assignment,
                 dueDate: date,
@@ -53,7 +53,7 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
         } catch(e) {
             return {
                  ...assignment,
-                dueDate: assignment.dueDate,
+                dueDate: new Date(assignment.dueDate).toISOString().split('T')[0],
                 dueTime: "23:59",
             }
         }
@@ -69,7 +69,7 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
 
         const result = await updateAssignment({
            ...values,
-           dueDate: combinedDueDate,
+           dueDate: new Date(combinedDueDate).toISOString(),
         });
 
         if (result.success) {

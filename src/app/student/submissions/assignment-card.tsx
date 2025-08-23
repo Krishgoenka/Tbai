@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Assignment } from "@/app/admin/assignments/schema";
@@ -27,7 +28,7 @@ export function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentC
         </div>
         <div>
             <p className="font-semibold">{assignment.title}</p>
-            <p className="text-sm text-muted-foreground">Due: {assignment.dueDate}</p>
+            <p className="text-sm text-muted-foreground">Due: {new Date(assignment.dueDate).toLocaleString()}</p>
         </div>
     </button>
   );
