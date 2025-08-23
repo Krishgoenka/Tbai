@@ -1,11 +1,10 @@
 "use client"
 
-import { useAuth } from "@/hooks/use-auth"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { usePathname } from "next/navigation";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, userRole } = useAuth()
-  const isDashboard = user && userRole
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith('/admin') || pathname.startsWith('/student');
 
   if (isDashboard) {
     return (
