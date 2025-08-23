@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -18,7 +19,7 @@ import { useAuth } from "@/hooks/use-auth"
 export function UserNav() {
   const { user, userRole, logout } = useAuth();
 
-  const profileLink = userRole === 'admin' ? '/admin' : '/student';
+  const profileLink = userRole === 'admin' ? '/admin/profile' : '/student/profile';
   const displayName = user?.displayName || 'Demo User';
   const email = user?.email || 'demo@example.com';
   const fallback = displayName ? displayName.charAt(0).toUpperCase() : "D";

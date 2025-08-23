@@ -1,0 +1,83 @@
+
+"use client"
+
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
+
+export default function AdminProfilePage() {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [isEditing, setIsEditing] = useState(false);
+
+    // Mock data state
+    const [name, setName] = useState(user?.displayName || "Admin User");
+    const [email, setEmail] = useState(user?.email || "admin@example.com");
+
+    const handleSave = () => {
+        // In a real app, you would call a server action to update the user's data.
+        console.log("Saving data:", { name, email });
+        toast({
+            title: "Success",
+            description: "Profile updated successfully.",
+        });
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        // Reset fields to original values
+        setName(user?.displayName || "Admin User");
+        setEmail(user?.email || "admin@example.com");
+        setIsEditing(false);
+    }
+
+  return (
+    <div className="space-y-8">
+        <h1 className="text-3xl font-bold">My Profile</h1>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                 <Avatar className="h-20 w-20">
+                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="admin avatar" />
+                    <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <CardTitle className="text-2xl">{name}</CardTitle>
+                    <CardDescription>{email}</CardDescription>
+                </div>
+            </div>
+             {!isEditing && (
+                <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+            )}
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-6">
+           <div className="space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" value={name} onChange={(e) => setName(e.target.value)} disabled={!isEditing} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={!isEditing} />
+                </div>
+                {isEditing && (
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                        <Button onClick={handleSave}>Save Changes</Button>
+                    </div>
+                )}
+           </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
