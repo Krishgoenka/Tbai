@@ -19,17 +19,13 @@ export default function StudentSubmissionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Fetch assignments inside useEffect to get fresh data on component mount/update
-    const fetchAssignments = async () => {
+    async function fetchAssignments() {
       setIsLoading(true);
       try {
         const data = await getAssignments({ publishedOnly: true });
         setAssignments(data);
-        // Set the first assignment as selected by default if it exists
         if (data.length > 0) {
-          if (!selectedAssignment || !data.find(a => a.id === selectedAssignment.id)) {
-            setSelectedAssignment(data[0]);
-          }
+          setSelectedAssignment(data[0]);
         } else {
           setSelectedAssignment(null);
         }
@@ -38,7 +34,7 @@ export default function StudentSubmissionsPage() {
       } finally {
         setIsLoading(false);
       }
-    };
+    }
     
     fetchAssignments();
   }, []);
