@@ -1,20 +1,78 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ArrowRight, CalendarCheck, CalendarX } from "lucide-react";
+import { getAssignments } from "@/lib/assignment-data";
+import type { Assignment } from "@/app/admin/assignments/schema";
+import { cn } from "@/lib/utils";
 
-const recentSubmissions = [
-    { title: "Calculus Homework 3", date: "2024-08-01", status: "Graded" },
-    { title: "History Essay", date: "2024-08-02", status: "Submitted" },
-];
+async function StudentAssignments() {
+    const allPublishedAssignments: Assignment[] = await getAssignments({ publishedOnly: true });
+    const now = new Date();
+
+    const activeAssignments = allPublishedAssignments.filter(a => new Date(a.dueDate) >= now);
+    const pastAssignments = allPublishedAssignments.filter(a => new Date(a.dueDate) < now);
+
+    const AssignmentListItem = ({ assignment }: { assignment: Assignment }) => (
+         <div className="flex justify-between items-center p-3 rounded-lg border">
+            <div>
+                <p className="font-medium">{assignment.title}</p>
+                <p className="text-sm text-muted-foreground">Due: {new Date(assignment.dueDate).toLocaleString()}</p>
+            </div>
+            <Button asChild variant="secondary" size="sm">
+                <Link href="/student/submissions">
+                    View Assignment <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </div>
+    );
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <CalendarCheck className="h-6 w-6 text-primary" />
+                        <CardTitle>Active Assignments ({activeAssignments.length})</CardTitle>
+                    </div>
+                    <CardDescription>These are your assignments that are currently open for submission.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {activeAssignments.length > 0 ? (
+                        activeAssignments.map((sub) => <AssignmentListItem key={sub.id} assignment={sub} />)
+                    ) : (
+                         <p className="text-sm text-muted-foreground text-center py-4">No active assignments. Great job!</p>
+                    )}
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <CalendarX className="h-6 w-6 text-muted-foreground" />
+                        <CardTitle>Past Assignments ({pastAssignments.length})</CardTitle>
+                    </div>
+                     <CardDescription>These are assignments where the deadline has passed.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {pastAssignments.length > 0 ? (
+                        pastAssignments.map((sub) => <AssignmentListItem key={sub.id} assignment={sub} />)
+                    ) : (
+                         <p className="text-sm text-muted-foreground text-center py-4">No past due assignments.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
 
 export default function StudentProfilePage() {
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Student Profile</h1>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -28,24 +86,13 @@ export default function StudentProfilePage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-            <Separator className="my-4" />
-             <div>
-                <h3 className="text-lg font-semibold mb-4">Recent Submissions</h3>
-                <div className="space-y-3">
-                    {recentSubmissions.map((sub, i) => (
-                        <div key={i} className="flex justify-between items-center p-3 rounded-lg border">
-                           <div>
-                             <p className="font-medium">{sub.title}</p>
-                             <p className="text-sm text-muted-foreground">{sub.date}</p>
-                           </div>
-                           <Badge variant={sub.status === 'Graded' ? 'default' : 'secondary'}>{sub.status}</Badge>
-                        </div>
-                    ))}
-                </div>
-             </div>
-        </CardContent>
       </Card>
+      
+      <div>
+         <h2 className="text-2xl font-bold mb-4">My Assignments</h2>
+         <StudentAssignments />
+      </div>
+
     </div>
   )
 }
