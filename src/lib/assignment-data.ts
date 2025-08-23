@@ -8,14 +8,26 @@ const assignmentsCollection = collection(db, 'assignments');
 
 export async function getAssignments(options?: { publishedOnly?: boolean }) {
   try {
-    let q = query(assignmentsCollection, orderBy("dueDate", "desc"));
+    let q;
     if (options?.publishedOnly) {
-        q = query(q, where("status", "==", "Published"));
+      // First, query by status. We will sort later in code.
+      q = query(assignmentsCollection, where("status", "==", "Published"));
+    } else {
+      // Default query for admin view, ordered by due date.
+      q = query(assignmentsCollection, orderBy("dueDate", "desc"));
     }
+    
     const querySnapshot = await getDocs(q);
-    const assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
     // Ensure submissions field exists, default to 0 if not
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
+
+    // If we only fetched published assignments, sort them now by due date descending.
+    if (options?.publishedOnly) {
+      validatedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    }
+
     return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
     console.error("Error fetching assignments: ", error);
