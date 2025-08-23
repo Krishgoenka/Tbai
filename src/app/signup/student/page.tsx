@@ -1,15 +1,15 @@
+
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -29,21 +29,13 @@ export default function StudentSignupPage() {
     }
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName: fullName,
-        role: "student", // Set role to student
-      });
-
+      window.sessionStorage.setItem('signupRole', 'student');
+      await createUserWithEmailAndPassword(auth, email, password);
       toast({ title: "Success", description: "Account created successfully! Redirecting..." });
-      router.push('/student');
     } catch (error: any) {
       console.error("Signup Error:", error);
       toast({ title: "Signup Error", description: error.message, variant: "destructive" });
+       window.sessionStorage.removeItem('signupRole');
     } finally {
       setLoading(false);
     }
@@ -53,13 +45,13 @@ export default function StudentSignupPage() {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      // The useAuth hook will handle user creation/checking.
-      // We are just initiating the popup.
+      window.sessionStorage.setItem('signupRole', 'student');
+      await signInWithPopup(auth, provider);
       toast({ title: "Success", description: "Signed up successfully! Redirecting..." });
     } catch (error: any) {
        console.error("Google Signup Error:", error);
        toast({ title: "Google Signup Error", description: error.message, variant: "destructive" });
+       window.sessionStorage.removeItem('signupRole');
     } finally {
         setLoading(false);
     }

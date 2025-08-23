@@ -32,76 +32,69 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Mock user for demo mode
-const mockUser = (role: 'admin' | 'student'): User => ({
-  uid: role === 'admin' ? 'admin-uid' : 'student-uid',
-  email: role === 'admin' ? 'admin@example.com' : 'student@example.com',
-  displayName: role === 'admin' ? 'Admin User' : 'Student User',
-  photoURL: `https://placehold.co/100x100.png`,
-  emailVerified: true,
-  isAnonymous: false,
-  metadata: {},
-  providerData: [],
-  providerId: 'password',
-  tenantId: null,
-  delete: async () => {},
-  getIdToken: async () => '',
-  getIdTokenResult: async () => ({
-    token: '',
-    expirationTime: '',
-    authTime: '',
-    issuedAtTime: '',
-    signInProvider: null,
-    signInSecondFactor: null,
-    claims: {},
-  }),
-  reload: async () => {},
-  toJSON: () => ({}),
-});
-
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
+      if (user) {
+        setUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
 
+        if (userDoc.exists()) {
+          const role = userDoc.data()?.role as UserRole;
+          setUserRole(role);
+          // Redirect based on role
+          if (role === 'admin' && !pathname.startsWith('/admin')) {
+            router.push('/admin');
+          } else if (role === 'student' && !pathname.startsWith('/student')) {
+            router.push('/student');
+          }
+        } else {
+          // New user, but signed in. Determine role from signup path or default.
+          const isSigningUpAsAdmin = window.sessionStorage.getItem('signupRole') === 'admin';
+          const role = isSigningUpAsAdmin ? 'admin' : 'student';
+          
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || 'New User',
+            role: role,
+          });
+          setUserRole(role);
+          window.sessionStorage.removeItem('signupRole');
+          if (role === 'admin') router.push('/admin');
+          else router.push('/student');
+        }
+      } else {
+        setUser(null);
+        setUserRole(null);
+        // If user is logged out, redirect to a public page if they are on a protected route
+        const isProtectedRoute = pathname.startsWith('/admin') || pathname.startsWith('/student');
+        if (isProtectedRoute) {
+          router.push('/login');
+        }
+      }
+      setLoading(false);
+    });
 
-  useEffect(() => {
-    // This is the demo mode setup
-    if (!isClient) return;
-
-    const isAdminPath = pathname.startsWith('/admin');
-    const isStudentPath = pathname.startsWith('/student');
-
-    if (isAdminPath) {
-      setUser(mockUser('admin'));
-      setUserRole('admin');
-    } else if (isStudentPath) {
-      setUser(mockUser('student'));
-      setUserRole('student');
-    } else {
-       setUser(null);
-       setUserRole(null);
-    }
-    setLoading(false);
-
-  }, [isClient, pathname]);
+    return () => unsubscribe();
+  }, [router, pathname]);
 
   const logout = async () => {
-    // In demo mode, just redirect to home
+    await auth.signOut();
     router.push('/');
   };
   
   const value = { user, userRole, loading, logout };
 
-   if (!isClient) {
+  if (loading) {
     return <LoadingScreen />;
   }
 

@@ -1,86 +1,93 @@
 
 import { z } from 'zod';
-import { employeeSchema, type Employee, type Task } from '@/app/admin/employees/schema';
+import { employeeSchema, type Employee, type Task, taskSchema } from '@/app/admin/employees/schema';
+import { db } from './firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
-let employeesData: Employee[] = [
-    {
-      id: "EMP721",
-      name: "John Doe",
-      role: "Software Engineer",
-      details: "Frontend specialist with React expertise.",
-      tasks: [
-        { id: "TSK001", description: "Develop new dashboard feature", date: "2024-08-15", status: "In Progress" },
-        { id: "TSK002", description: "Fix login page bug", date: "2024-07-30", status: "Done" },
-      ],
-    },
-     {
-      id: "EMP452",
-      name: "Jane Smith",
-      role: "Project Manager",
-      details: "Agile certified project manager.",
-       tasks: [
-        { id: "TSK003", description: "Plan Q4 roadmap", date: "2024-09-01", status: "To Do" },
-      ],
-    },
-    {
-      id: "EMP883",
-      name: "Sam Wilson",
-      role: "UI/UX Designer",
-      details: "Focuses on user-centric design principles.",
-      tasks: [],
-    },
-];
+const employeesCollection = collection(db, 'employees');
 
 export async function getEmployees() {
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return Promise.resolve(z.array(employeeSchema).parse(JSON.parse(JSON.stringify(employeesData))));
+  try {
+    const querySnapshot = await getDocs(employeesCollection);
+    const employees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return z.array(employeeSchema).parse(employees);
+  } catch (error) {
+    console.error("Error fetching employees: ", error);
+    return [];
+  }
 }
 
-export async function updateEmployeeData(id: string, updatedData: Omit<Employee, 'id' | 'tasks'>) {
-    const index = employeesData.findIndex(e => e.id === id);
-    if (index === -1) throw new Error("Employee not found");
+export async function addEmployeeData(employee: Omit<Employee, 'id'>) {
+    try {
+        const docRef = await addDoc(employeesCollection, employee);
+        return { ...employee, id: docRef.id };
+    } catch (error) {
+        console.error("Error adding employee: ", error);
+        throw new Error("Failed to add employee.");
+    }
+}
 
-    const existingEmployee = employeesData[index];
-    const newEmployeeData: Employee = {
-      ...existingEmployee,
-      ...updatedData,
-    };
-    
-    const validatedEmployee = employeeSchema.parse(newEmployeeData);
-    employeesData[index] = validatedEmployee;
-    return validatedEmployee;
+
+export async function updateEmployeeData(id: string, updatedData: Partial<Omit<Employee, 'id' | 'tasks'>>) {
+    try {
+        const employeeRef = doc(db, 'employees', id);
+        await updateDoc(employeeRef, updatedData);
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating employee: ", error);
+        throw new Error("Failed to update employee.");
+    }
 }
 
 
 export async function deleteEmployeeData(id: string) {
-    const index = employeesData.findIndex(e => e.id === id);
-    if (index === -1) throw new Error("Employee not found");
-    employeesData.splice(index, 1);
-    return { success: true };
+    try {
+        const employeeRef = doc(db, 'employees', id);
+        await deleteDoc(employeeRef);
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting employee: ", error);
+        throw new Error("Failed to delete employee.");
+    }
 }
 
 
 export async function addEmployeeTask(employeeId: string, taskData: Omit<Task, 'id'>) {
-    const employeeIndex = employeesData.findIndex(e => e.id === employeeId);
-    if (employeeIndex === -1) throw new Error("Employee not found");
-
-    const newTaskId = `TSK${String(Math.random()).slice(2, 7)}`;
-    const newTask: Task = {
-        id: newTaskId,
-        ...taskData
-    };
-    const validatedTask = taskSchema.parse(newTask);
-    employeesData[employeeIndex].tasks.push(validatedTask);
-    return validatedTask;
+    try {
+        const employeeRef = doc(db, 'employees', employeeId);
+        const newTaskId = `TSK${String(Math.random()).slice(2, 7)}`;
+        const newTask: Task = {
+            id: newTaskId,
+            ...taskData
+        };
+        const validatedTask = taskSchema.parse(newTask);
+        await updateDoc(employeeRef, {
+            tasks: arrayUnion(validatedTask)
+        });
+        return validatedTask;
+    } catch (error) {
+        console.error("Error adding task: ", error);
+        throw new Error("Failed to add task.");
+    }
 }
 
 export async function deleteEmployeeTask(employeeId: string, taskId: string) {
-    const employeeIndex = employeesData.findIndex(e => e.id === employeeId);
-    if (employeeIndex === -1) throw new Error("Employee not found");
-    
-    const taskIndex = employeesData[employeeIndex].tasks.findIndex(t => t.id === taskId);
-    if (taskIndex === -1) throw new Error("Task not found");
+    try {
+        const employeeRef = doc(db, 'employees', employeeId);
+        const employeeDoc = await getDoc(employeeRef);
+        if (!employeeDoc.exists()) throw new Error("Employee not found");
+        
+        const employee = employeeSchema.parse({ id: employeeDoc.id, ...employeeDoc.data() });
+        const taskToDelete = employee.tasks.find(t => t.id === taskId);
 
-    employeesData[employeeIndex].tasks.splice(taskIndex, 1);
-    return { success: true };
+        if (!taskToDelete) throw new Error("Task not found");
+        
+        await updateDoc(employeeRef, {
+            tasks: arrayRemove(taskToDelete)
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting task: ", error);
+        throw new Error("Failed to delete task.");
+    }
 }

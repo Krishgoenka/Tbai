@@ -1,112 +1,71 @@
 
 import { z } from 'zod';
 import { assignmentSchema, type Assignment } from '@/app/admin/assignments/schema';
+import { db } from './firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
 
-// This is acting as our in-memory database for the demo.
-let assignmentsData: Assignment[] = [
-  {
-    id: "ASN005",
-    title: "Test Assignment",
-    description: "This is a test assignment to demonstrate the synchronization between the admin and student panels. Please submit any file to complete.",
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Due 3 days from now
-    fileUrl: "/placeholder.pdf",
-    status: "Published",
-    submissions: 0,
-  },
-  {
-    id: "ASN001",
-    title: "Calculus Homework 3",
-    description: "Complete exercises 1-10 on page 50 of the textbook. Show all your work for full credit. The topics covered include derivatives and integration.",
-    dueDate: "2024-09-01T23:59",
-    fileUrl: "/placeholder.pdf",
-    status: "Published",
-    submissions: 15,
-  },
-  {
-    id: "ASN002",
-    title: "History Essay: The Roman Empire",
-    description: "Write a 5-page essay on the fall of the Roman Empire. Your essay should have a clear thesis statement, supporting arguments, and a conclusion. Please cite your sources using MLA format.",
-    dueDate: "2024-09-10T23:59",
-    fileUrl: "/placeholder.pdf",
-    status: "Published",
-    submissions: 8,
-  },
-   {
-    id: "ASN003",
-    title: "Physics Lab Report",
-    description: "Submit the lab report for the 'Gravity and Motion' experiment. Include your hypothesis, methodology, data, analysis, and conclusion. The report should be no more than 10 pages.",
-    dueDate: "2024-08-25T23:59",
-    fileUrl: "/placeholder.pdf",
-    status: "Published",
-    submissions: 20,
-  },
-  {
-    id: "ASN004",
-    title: "Python Programming Challenge",
-    description: "Write a Python script that sorts a list of 1 million integers using the Merge Sort algorithm. Your script will be tested for correctness and performance. Submit your .py file.",
-    dueDate: "2024-09-15T23:59",
-    fileUrl: "/placeholder.pdf",
-    status: "Draft",
-    submissions: 0,
-  },
-];
+const assignmentsCollection = collection(db, 'assignments');
 
 export async function getAssignments(options?: { publishedOnly?: boolean }) {
-  // We use a promise to simulate async behavior.
-  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
-  let data = z.array(assignmentSchema).parse(JSON.parse(JSON.stringify(assignmentsData)));
-
-  if (options?.publishedOnly) {
-    data = data.filter(assignment => assignment.status === 'Published');
+  try {
+    let q = query(assignmentsCollection, orderBy("dueDate", "desc"));
+    if (options?.publishedOnly) {
+        q = query(q, where("status", "==", "Published"));
+    }
+    const querySnapshot = await getDocs(q);
+    const assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return z.array(assignmentSchema).parse(assignments);
+  } catch (error) {
+    console.error("Error fetching assignments: ", error);
+    return [];
   }
-  
-  return Promise.resolve(data);
 }
 
 export async function addMockAssignment(assignment: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>) {
-    const newId = `ASN${String(assignmentsData.length + 1).padStart(3, '0')}`;
-    const newAssignment: Assignment = {
-        ...assignment,
-        id: newId,
-        submissions: 0,
-        fileUrl: "/placeholder.pdf", // Placeholder since we don't handle file uploads yet
-    };
-    const validatedAssignment = assignmentSchema.parse(newAssignment);
-    assignmentsData.unshift(validatedAssignment); // Add to the beginning of the list
-    return validatedAssignment;
+    try {
+        const newAssignment: Omit<Assignment, 'id'> = {
+            ...assignment,
+            submissions: 0,
+            fileUrl: "/placeholder.pdf", // Placeholder
+        };
+        const docRef = await addDoc(assignmentsCollection, newAssignment);
+        return { ...newAssignment, id: docRef.id };
+    } catch (error) {
+        console.error("Error adding assignment: ", error);
+        throw new Error("Failed to add assignment.");
+    }
 }
 
-export async function updateMockAssignment(id: string, updatedData: Omit<Assignment, 'submissions' | 'fileUrl'>) {
-    const index = assignmentsData.findIndex(a => a.id === id);
-    if (index === -1) {
-        throw new Error("Assignment not found");
+export async function updateMockAssignment(id: string, updatedData: Partial<Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>>) {
+    try {
+        const assignmentRef = doc(db, 'assignments', id);
+        await updateDoc(assignmentRef, updatedData);
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating assignment: ", error);
+        throw new Error("Failed to update assignment.");
     }
-    
-    const existingAssignment = assignmentsData[index];
-    const newAssignmentData: Assignment = {
-      ...existingAssignment,
-      ...updatedData
-    };
-    
-    const validatedAssignment = assignmentSchema.parse(newAssignmentData);
-    assignmentsData[index] = validatedAssignment;
-    return validatedAssignment;
 }
+
 
 export async function updateMockAssignmentStatus(id: string, status: "Published" | "Draft") {
-     const index = assignmentsData.findIndex(a => a.id === id);
-    if (index === -1) {
-        throw new Error("Assignment not found");
+     try {
+        const assignmentRef = doc(db, 'assignments', id);
+        await updateDoc(assignmentRef, { status });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating assignment status: ", error);
+        throw new Error("Failed to update status.");
     }
-    assignmentsData[index].status = status;
-    return assignmentsData[index];
 }
 
 export async function deleteMockAssignment(id: string) {
-    const index = assignmentsData.findIndex(a => a.id === id);
-    if (index === -1) {
-        throw new Error("Assignment not found");
+    try {
+        const assignmentRef = doc(db, 'assignments', id);
+        await deleteDoc(assignmentRef);
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting assignment: ", error);
+        throw new Error("Failed to delete assignment.");
     }
-    assignmentsData.splice(index, 1);
-    return { success: true };
 }
