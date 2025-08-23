@@ -7,53 +7,10 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const assignmentsCollection = collection(db, 'assignments');
 
-// --- Mock Data ---
-const mockAssignments: Assignment[] = [
-    {
-        id: "ASN001",
-        title: "one pircr",
-        description: "Complete problems 1-10 on page 53 of the textbook. Show all work for full credit. Submissions must be a single PDF file.",
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Due in 7 days
-        status: "Published",
-        submissions: 15,
-        fileUrl: "/placeholder.pdf"
-    },
-    {
-        id: "ASN002",
-        title: "one piece is real",
-        description: "Write a 5-page essay on the impact of the Punic Wars on Roman expansion. Use at least 3 academic sources.",
-        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // Due in 14 days
-        status: "Published",
-        submissions: 8,
-        fileUrl: "/placeholder.pdf"
-    },
-    {
-        id: "ASN003",
-        title: "Intro to Python: Final Project",
-        description: "Develop a simple command-line application. Project brief attached. This will be saved as a draft.",
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Due in 30 days
-        status: "Draft",
-        submissions: 0,
-        fileUrl: "/placeholder.pdf"
-    }
-];
-// --- End Mock Data ---
-
-
 // Define a more specific type for the data coming into the add function
 type AddAssignmentData = Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>;
 
 export async function getAssignments(options?: { publishedOnly?: boolean }): Promise<Assignment[]> {
-  // Returning mock data for now to ensure UI stability.
-  // In a real application, you would remove this and use the Firestore logic below.
-  if (process.env.NODE_ENV === 'development') {
-    if (options?.publishedOnly) {
-        return mockAssignments.filter(a => a.status === "Published");
-    }
-    return mockAssignments;
-  }
-  
-  // --- Real Firestore Logic ---
   try {
     let q;
     if (options?.publishedOnly) {
@@ -81,17 +38,6 @@ export async function addAssignment(
     assignmentData: AddAssignmentData, 
     file?: File
 ) {
-    if (process.env.NODE_ENV === 'development') {
-        const newId = `ASN${String(Math.random()).slice(2, 5)}`;
-        const newAssignment: Assignment = {
-            id: newId,
-            ...assignmentData,
-            submissions: 0,
-            fileUrl: file ? URL.createObjectURL(file) : "/placeholder.pdf",
-        };
-        mockAssignments.unshift(newAssignment);
-        return newAssignment;
-    }
     try {
         let fileUrl = "/placeholder.pdf"; // Default placeholder
 
