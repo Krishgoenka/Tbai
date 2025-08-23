@@ -1,9 +1,36 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    // Helper function to check if a user is an admin.
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if a user is a student.
+    function isStudent() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+    
+    // Users can read their own user document to get their role, but cannot write to it.
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Roles should be managed by a trusted backend process.
+    }
+
+    // Rules for the 'assignments' collection
+    match /assignments/{assignmentId} {
+      // Admins can do anything (create, read, update, delete).
+      allow read, write: if isAdmin();
+      // Students can only read (get, list) assignments.
+      allow get, list: if isStudent();
+    }
+
+    // Rules for the 'employees' collection
+    match /employees/{employeeId} {
+      // Only admins can access the employees collection.
+      allow read, write: if isAdmin();
     }
   }
 }
