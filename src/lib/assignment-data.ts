@@ -7,12 +7,13 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const assignmentsCollection = collection(db, 'assignments');
 
+// Define a more specific type for the data coming into the add function
+type AddAssignmentData = Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>;
+
 export async function getAssignments(options?: { publishedOnly?: boolean }) {
   try {
     let q;
     if (options?.publishedOnly) {
-      // This query requires a composite index on status and dueDate.
-      // Or we can filter client-side. Given the small number of statuses, let's query all and filter.
        q = query(assignmentsCollection, where("status", "==", "Published"));
     } else {
       q = query(assignmentsCollection);
@@ -21,17 +22,13 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
-    // Ensure submissions field exists
+    // Ensure submissions field exists and sort by due date
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
-
-    // Sort by due date after fetching, descending (newest first)
     validatedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
 
     return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
     console.error("Error fetching assignments: ", error);
-    // This could be a permissions error if rules are not set, or an index error.
-    // Return empty array to prevent crashing the app.
     if (error instanceof Error && error.message.includes("indexes?create_composite")) {
         console.error("Firestore composite index required. Please create it in the Firebase console.");
     }
@@ -40,7 +37,7 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
 }
 
 export async function addAssignment(
-    assignmentData: Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>, 
+    assignmentData: AddAssignmentData, 
     file?: File
 ) {
     try {
@@ -52,9 +49,12 @@ export async function addAssignment(
             fileUrl = await getDownloadURL(snapshot.ref);
         }
 
-        // CORRECTED: Ensure all fields from assignmentData, including status, are included.
+        // CORRECTED: Create the final object to be saved, ensuring all fields are present.
         const newAssignment: Omit<Assignment, 'id'> = {
-            ...assignmentData,
+            title: assignmentData.title,
+            description: assignmentData.description,
+            dueDate: assignmentData.dueDate,
+            status: assignmentData.status, // This is the crucial fix
             submissions: 0,
             fileUrl: fileUrl,
         };
