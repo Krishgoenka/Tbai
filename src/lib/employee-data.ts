@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { employeeSchema, type Employee, type Task, taskSchema } from '@/app/admin/employees/schema';
 import { db } from './firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 
 const employeesCollection = collection(db, 'employees');
 
@@ -10,7 +10,9 @@ export async function getEmployees() {
   try {
     const querySnapshot = await getDocs(employeesCollection);
     const employees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return z.array(employeeSchema).parse(employees);
+    // Ensure tasks array exists and is valid, default to empty array if not.
+    const validatedEmployees = employees.map(emp => ({...emp, tasks: emp.tasks || []}));
+    return z.array(employeeSchema).parse(validatedEmployees);
   } catch (error) {
     console.error("Error fetching employees: ", error);
     return [];

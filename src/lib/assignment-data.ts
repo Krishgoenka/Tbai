@@ -14,7 +14,9 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
     }
     const querySnapshot = await getDocs(q);
     const assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return z.array(assignmentSchema).parse(assignments);
+    // Ensure submissions field exists, default to 0 if not
+    const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
+    return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
     console.error("Error fetching assignments: ", error);
     return [];
