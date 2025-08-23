@@ -9,11 +9,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isDashboard) {
     return (
-      <SidebarProvider>
         <div className="flex min-h-screen">
           {children}
         </div>
-      </SidebarProvider>
     )
   }
 
