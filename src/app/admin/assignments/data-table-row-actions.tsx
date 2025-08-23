@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { assignmentSchema } from "./schema"
+import { EditAssignmentDialog } from "./edit-assignment-dialog"
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -61,9 +62,13 @@ export function DataTableRowActions<TData>({
                     Unpublish
                 </DropdownMenuItem>
               )}
-            <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+            <DropdownMenuItem asChild>
+                <EditAssignmentDialog assignment={assignment}>
+                     <div className="w-full flex items-center relative cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                     </div>
+                </EditAssignmentDialog>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialogTrigger asChild>

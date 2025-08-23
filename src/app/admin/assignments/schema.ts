@@ -5,7 +5,7 @@ export const assignmentSchema = z.object({
   title: z.string(),
   description: z.string(),
   dueDate: z.string(),
-  fileUrl: z.string().url().or(z.string().startsWith("/")),
+  fileUrl: z.string().url().or(z.string().startsWith("/")).optional(),
   status: z.enum(["Draft", "Published"]),
   submissions: z.number().optional().default(0),
 })

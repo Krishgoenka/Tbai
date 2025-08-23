@@ -13,22 +13,38 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { PlusCircle } from "lucide-react"
+import { Assignment } from "./schema"
+import { useMemo } from "react"
 
-export function AddAssignmentDialog() {
+interface EditAssignmentDialogProps {
+    assignment: Assignment;
+    children: React.ReactNode;
+}
+
+export function EditAssignmentDialog({ assignment, children }: EditAssignmentDialogProps) {
+
+  const { date, time } = useMemo(() => {
+    try {
+      const [datePart, timePart] = assignment.dueDate.split('T');
+      if (timePart) {
+         return { date: datePart, time: timePart.slice(0, 5) };
+      }
+      return { date: datePart, time: "23:59" };
+    } catch(e) {
+      return { date: assignment.dueDate, time: "23:59" };
+    }
+  }, [assignment.dueDate]);
+  
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Assignment
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[475px]">
         <DialogHeader>
-          <DialogTitle>Add New Assignment</DialogTitle>
+          <DialogTitle>Edit Assignment</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new assignment. You can save it as a draft or publish it directly to students.
+            Make changes to the assignment below. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -36,21 +52,21 @@ export function AddAssignmentDialog() {
             <Label htmlFor="title" className="text-right">
               Title
             </Label>
-            <Input id="title" placeholder="e.g. Calculus Homework 3" className="col-span-3" />
+            <Input id="title" defaultValue={assignment.title} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
-            <Textarea id="description" placeholder="Assignment details..." className="col-span-3" />
+            <Textarea id="description" defaultValue={assignment.description} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="due-date" className="text-right">
               Due Date
             </Label>
             <div className="col-span-3 grid grid-cols-2 gap-2">
-                <Input id="due-date" type="date" />
-                <Input id="due-time" type="time" />
+                <Input id="due-date" type="date" defaultValue={date} />
+                <Input id="due-time" type="time" defaultValue={time} />
             </div>
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
@@ -61,8 +77,7 @@ export function AddAssignmentDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="secondary">Save as Draft</Button>
-          <Button type="submit">Publish</Button>
+          <Button type="submit">Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
