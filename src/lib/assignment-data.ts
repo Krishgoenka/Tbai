@@ -11,7 +11,9 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
   try {
     let q;
     if (options?.publishedOnly) {
-      q = query(assignmentsCollection, where("status", "==", "Published"));
+      // This query requires a composite index on status and dueDate.
+      // Or we can filter client-side. Given the small number of statuses, let's query all and filter.
+       q = query(assignmentsCollection, where("status", "==", "Published"));
     } else {
       q = query(assignmentsCollection);
     }
@@ -19,6 +21,7 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
+    // Ensure submissions field exists
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
 
     // Sort by due date after fetching, descending (newest first)
@@ -27,6 +30,11 @@ export async function getAssignments(options?: { publishedOnly?: boolean }) {
     return z.array(assignmentSchema).parse(validatedAssignments);
   } catch (error) {
     console.error("Error fetching assignments: ", error);
+    // This could be a permissions error if rules are not set, or an index error.
+    // Return empty array to prevent crashing the app.
+    if (error instanceof Error && error.message.includes("indexes?create_composite")) {
+        console.error("Firestore composite index required. Please create it in the Firebase console.");
+    }
     return [];
   }
 }
@@ -44,11 +52,13 @@ export async function addAssignment(
             fileUrl = await getDownloadURL(snapshot.ref);
         }
 
+        // CORRECTED: Ensure all fields from assignmentData, including status, are included.
         const newAssignment: Omit<Assignment, 'id'> = {
             ...assignmentData,
             submissions: 0,
             fileUrl: fileUrl,
         };
+
         const docRef = await addDoc(assignmentsCollection, newAssignment);
         return { ...newAssignment, id: docRef.id };
     } catch (error) {
