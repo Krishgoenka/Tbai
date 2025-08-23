@@ -1,5 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookCheck, Briefcase } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, BookCheck, Briefcase, Book, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function AdminDashboardPage() {
   return (
@@ -47,6 +49,67 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-md">
+                        <Users className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Manage Employees</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <CardDescription>Add, edit, or remove employees and manage their assigned tasks.</CardDescription>
+            </CardContent>
+            <CardContent>
+                <Button asChild className="w-full">
+                    <Link href="/admin/employees">Go to Employees <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                </Button>
+            </CardContent>
+          </Card>
+           <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-md">
+                        <Book className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Manage Assignments</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <CardDescription>Create new assignments, attach PDF materials, and view existing ones.</CardDescription>
+            </CardContent>
+            <CardContent>
+                <Button asChild className="w-full">
+                    <Link href="/admin/assignments">Go to Assignments <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                </Button>
+            </CardContent>
+          </Card>
+           <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-md">
+                        <BookCheck className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Review Submissions</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <CardDescription>View student submissions, filter by assignment, and analyze performance.</CardDescription>
+            </CardContent>
+            <CardContent>
+                <Button asChild className="w-full">
+                    <Link href="/admin/submissions">Go to Submissions <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       <div>
         <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
         <Card>
