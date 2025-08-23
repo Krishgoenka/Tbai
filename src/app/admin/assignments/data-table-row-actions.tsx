@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Row } from "@tanstack/react-table"
@@ -20,11 +21,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { assignmentSchema } from "./schema"
 import { EditAssignmentDialog } from "./edit-assignment-dialog"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
+import { deleteAssignment, updateAssignmentStatus } from "./actions"
+import { useRouter } from "next/navigation"
+
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -34,9 +39,49 @@ export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const assignment = assignmentSchema.parse(row.original)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+
+  const handleStatusChange = async (status: "Published" | "Draft") => {
+     const result = await updateAssignmentStatus(assignment.id, status);
+      if (result.success) {
+            toast({
+                title: "Success",
+                description: result.message,
+            });
+            router.refresh();
+        } else {
+             toast({
+                title: "Error",
+                description: result.message,
+                variant: "destructive",
+            });
+        }
+  }
+
+  const handleDelete = async () => {
+    const result = await deleteAssignment(assignment.id);
+     if (result.success) {
+        toast({
+            title: "Success",
+            description: result.message,
+        });
+        setIsDeleteDialogOpen(false);
+        router.refresh();
+    } else {
+            toast({
+            title: "Error",
+            description: result.message,
+            variant: "destructive",
+        });
+    }
+  }
 
   return (
-      <AlertDialog>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -51,32 +96,33 @@ export function DataTableRowActions<TData>({
              <DropdownMenuLabel>Actions</DropdownMenuLabel>
              <DropdownMenuSeparator />
               {assignment.status === "Draft" && (
-                 <DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => handleStatusChange("Published")}>
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Publish
                 </DropdownMenuItem>
               )}
                {assignment.status === "Published" && (
-                 <DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => handleStatusChange("Draft")}>
                     <Archive className="mr-2 h-4 w-4" />
                     Unpublish
                 </DropdownMenuItem>
               )}
-            <DropdownMenuItem asChild>
-                <EditAssignmentDialog assignment={assignment}>
-                     <div className="w-full flex items-center relative cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+            <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                <EditAssignmentDialog assignment={assignment} onOpenChange={setIsEditDialogOpen} open={isEditDialogOpen}>
+                     <div onClick={() => setIsEditDialogOpen(true)} className="w-full flex items-center relative cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                      </div>
                 </EditAssignmentDialog>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialogTrigger asChild>
-              <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/40">
+            <DropdownMenuItem 
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/40"
+                onSelect={() => setIsDeleteDialogOpen(true)}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
-            </AlertDialogTrigger>
           </DropdownMenuContent>
         </DropdownMenu>
         <AlertDialogContent>
@@ -88,7 +134,7 @@ export function DataTableRowActions<TData>({
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
                 Continue
                 </AlertDialogAction>
             </AlertDialogFooter>

@@ -44,7 +44,8 @@ let assignmentsData: Assignment[] = [
 
 export async function getAssignments(options?: { publishedOnly?: boolean }) {
   // We use a promise to simulate async behavior.
-  let data = z.array(assignmentSchema).parse(assignmentsData);
+  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
+  let data = z.array(assignmentSchema).parse(JSON.parse(JSON.stringify(assignmentsData)));
 
   if (options?.publishedOnly) {
     data = data.filter(assignment => assignment.status === 'Published');
@@ -64,4 +65,39 @@ export async function addMockAssignment(assignment: Omit<Assignment, 'id' | 'sub
     const validatedAssignment = assignmentSchema.parse(newAssignment);
     assignmentsData.unshift(validatedAssignment); // Add to the beginning of the list
     return validatedAssignment;
+}
+
+export async function updateMockAssignment(id: string, updatedData: Omit<Assignment, 'submissions' | 'fileUrl'>) {
+    const index = assignmentsData.findIndex(a => a.id === id);
+    if (index === -1) {
+        throw new Error("Assignment not found");
+    }
+    
+    const existingAssignment = assignmentsData[index];
+    const newAssignmentData: Assignment = {
+      ...existingAssignment,
+      ...updatedData
+    };
+    
+    const validatedAssignment = assignmentSchema.parse(newAssignmentData);
+    assignmentsData[index] = validatedAssignment;
+    return validatedAssignment;
+}
+
+export async function updateMockAssignmentStatus(id: string, status: "Published" | "Draft") {
+     const index = assignmentsData.findIndex(a => a.id === id);
+    if (index === -1) {
+        throw new Error("Assignment not found");
+    }
+    assignmentsData[index].status = status;
+    return assignmentsData[index];
+}
+
+export async function deleteMockAssignment(id: string) {
+    const index = assignmentsData.findIndex(a => a.id === id);
+    if (index === -1) {
+        throw new Error("Assignment not found");
+    }
+    assignmentsData.splice(index, 1);
+    return { success: true };
 }
