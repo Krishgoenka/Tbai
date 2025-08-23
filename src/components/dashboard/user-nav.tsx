@@ -23,14 +23,16 @@ export function UserNav() {
   }
 
   const profileLink = userRole === 'admin' ? '/admin' : '/student';
-  const fallback = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email!.charAt(0).toUpperCase();
+  const displayName = user.displayName || 'Demo User';
+  const email = user.email || 'demo@example.com';
+  const fallback = displayName ? displayName.charAt(0).toUpperCase() : "D";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL || `https://placehold.co/100x100.png`} alt={user.displayName || user.email!} data-ai-hint="user avatar" />
+            <AvatarImage src={user.photoURL || `https://placehold.co/100x100.png`} alt={displayName} data-ai-hint="user avatar" />
             <AvatarFallback>{fallback}</AvatarFallback>
           </Avatar>
         </Button>
@@ -38,9 +40,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {email}
             </p>
           </div>
         </DropdownMenuLabel>
