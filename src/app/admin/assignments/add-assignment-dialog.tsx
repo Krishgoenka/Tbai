@@ -21,17 +21,16 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { addAssignment } from "./actions"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { assignmentSchema } from "./schema"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // This schema is for form validation. It includes fields that are not in the database model.
-const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true }).extend({
+const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, dueDate: true }).extend({
     dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
     title: z.string().min(3, "Title is required."),
     description: z.string().min(10, "Description is required."),
-    // Allow file to be optional
     file: z.any().optional(),
 });
 
@@ -39,7 +38,6 @@ const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl:
 export function AddAssignmentDialog() {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
-    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -48,29 +46,26 @@ export function AddAssignmentDialog() {
             description: "",
             dueDate: "",
             dueTime: "23:59",
+            status: "Draft", // Default to Draft
         },
     });
 
-    // This function is called when the user clicks "Save as Draft" or "Publish"
-    async function onSubmit(values: z.infer<typeof formSchema>, status: "Draft" | "Published") {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         // Combine date and time into a single ISO string for the database
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
         const result = await addAssignment({
-           title: values.title,
-           description: values.description,
+           ...values,
            dueDate: new Date(combinedDueDate).toISOString(),
-           status: status, // Set the status based on the button clicked
         });
 
         if (result.success) {
             toast({
                 title: "Success",
-                description: `Assignment has been successfully ${status === 'Published' ? 'published' : 'saved as a draft'}.`,
+                description: `Assignment has been successfully saved.`,
             });
             form.reset();
             setIsOpen(false);
-            // router.refresh() is not needed here because revalidatePath is called in the action
         } else {
              toast({
                 title: "Error",
@@ -91,8 +86,7 @@ export function AddAssignmentDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[475px]">
          <Form {...form}>
-            {/* We don't use a form onSubmit here because we have two separate submit buttons */}
-            <form>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
                 <DialogHeader>
                 <DialogTitle>Add New Assignment</DialogTitle>
                 <DialogDescription>
@@ -157,6 +151,27 @@ export function AddAssignmentDialog() {
                             />
                         </div>
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem className="grid grid-cols-4 items-center gap-4">
+                                <FormLabel className="text-right">Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select a status" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                    <SelectItem value="Draft">Draft</SelectItem>
+                                    <SelectItem value="Published">Published</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage className="col-span-4 pl-[25%]" />
+                            </FormItem>
+                        )}
+                        />
                     <FormField
                         control={form.control}
                         name="file"
@@ -172,9 +187,8 @@ export function AddAssignmentDialog() {
                     />
                 </div>
                 <DialogFooter>
-                    {/* Use form.handleSubmit to trigger validation before calling our onSubmit function */}
-                    <Button type="button" variant="secondary" onClick={form.handleSubmit((data) => onSubmit(data, "Draft"))}>Save as Draft</Button>
-                    <Button type="button" onClick={form.handleSubmit((data) => onSubmit(data, "Published"))}>Publish</Button>
+                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>Cancel</Button>
+                    <Button type="submit">Save Assignment</Button>
                 </DialogFooter>
             </form>
         </Form>

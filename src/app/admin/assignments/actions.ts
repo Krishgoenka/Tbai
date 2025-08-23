@@ -14,17 +14,11 @@ const updateAssignmentFormSchema = assignmentSchema.omit({ submissions: true, fi
 
 export async function addAssignment(data: z.infer<typeof addAssignmentFormSchema>) {
     try {
-        // Validate the incoming data against the schema
+        // The form now provides the status, so we can validate it directly.
         const validatedData = addAssignmentFormSchema.parse(data);
 
         // The data is valid, proceed to add it to the database.
-        // We explicitly pass the fields to ensure correctness.
-        await dbAddAssignment({
-            title: validatedData.title,
-            description: validatedData.description,
-            dueDate: validatedData.dueDate,
-            status: validatedData.status,
-        });
+        await dbAddAssignment(validatedData);
 
         // Revalidate paths to update the UI across the app
         revalidatePath("/admin/assignments");
