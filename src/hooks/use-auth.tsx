@@ -16,6 +16,7 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   profileNeedsUpdate: boolean;
+  setProfileNeedsUpdate: (needsUpdate: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userDocRef = doc(db, 'users', firebaseUser.uid);
             const userDoc = await getDoc(userDocRef);
 
-            // This temporary data is set during the signup process
             const signupRole = window.sessionStorage.getItem('signupRole');
             const signupName = window.sessionStorage.getItem('signupName');
 
@@ -48,27 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const currentDbRole = userData?.role;
                 setUserRole(currentDbRole);
 
-                 // Check if profile is complete
                 const isProfileComplete = 
                     currentDbRole === 'admin' 
                         ? !!userData.displayName 
                         : !!(userData.displayName && userData.studentId && userData.batch && userData.yearOfStudy);
 
-                if (!isProfileComplete) {
+                if (!isProfileComplete && !profileNeedsUpdate) {
                     setProfileNeedsUpdate(true);
                     if (!pathname.endsWith('/profile')) {
-                        router.push(currentDbRole === 'admin' ? '/admin/profile' : '/student/profile');
+                         router.push(currentDbRole === 'admin' ? '/admin/profile' : '/student/profile');
                     }
-                } else {
+                } else if (isProfileComplete && profileNeedsUpdate) {
                     setProfileNeedsUpdate(false);
-                    // Standard redirection for existing, complete users
-                    if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
-                        router.push(currentDbRole === 'admin' ? '/admin' : '/student');
-                    }
+                }
+
+                if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
+                    router.push(currentDbRole === 'admin' ? '/admin' : '/student');
                 }
 
             } else {
-                // NEW USER: Create their document
                 if (signupRole) {
                     determinedRole = signupRole as UserRole;
                 }
@@ -90,11 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 await setDoc(userDocRef, newUserDoc);
                 setUserRole(determinedRole);
                 
-                // This is a new user, they need to complete their profile.
                 setProfileNeedsUpdate(true);
                 router.push(determinedRole === 'admin' ? '/admin/profile' : '/student/profile');
 
-                // Clean up temporary data
                 window.sessionStorage.removeItem('signupRole'); 
                 window.sessionStorage.removeItem('signupName');
             }
@@ -106,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         }
         setLoading(false);
-    }, [router, pathname]);
+    }, [router, pathname, profileNeedsUpdate]);
 
 
     useEffect(() => {
@@ -123,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
     
-    const value = { user, userRole, loading, logout, profileNeedsUpdate };
+    const value = { user, userRole, loading, logout, profileNeedsUpdate, setProfileNeedsUpdate };
 
     return (
         <AuthContext.Provider value={value}>

@@ -18,12 +18,14 @@ import { updateStudentProfile } from "./actions";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 export default function StudentProfilePage() {
-    const { user, loading: authLoading, profileNeedsUpdate } = useAuth();
+    const { user, loading: authLoading, profileNeedsUpdate, setProfileNeedsUpdate } = useAuth();
     const { toast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof studentProfileSchema>>({
         resolver: zodResolver(studentProfileSchema),
@@ -55,7 +57,6 @@ export default function StudentProfilePage() {
         }
         if (!authLoading) {
             fetchProfile();
-            // If the auth hook determines the profile needs an update, start in edit mode.
             if (profileNeedsUpdate) {
                 setIsEditing(true);
             }
@@ -68,14 +69,22 @@ export default function StudentProfilePage() {
         if (result.success) {
             toast({ title: "Success", description: result.message });
             setIsEditing(false);
+            setProfileNeedsUpdate(false); // Manually update the context state
+            router.push('/student'); // Redirect to dashboard
         } else {
             toast({ title: "Error", description: result.message, variant: "destructive" });
         }
     };
 
     const handleCancel = () => {
-        form.reset(); // Resets to the last fetched values
-        setIsEditing(false);
+        if (profileNeedsUpdate) {
+            // If they are forced here, cancelling should still let them proceed
+            setProfileNeedsUpdate(false);
+            router.push('/student');
+        } else {
+            form.reset(); // Resets to the last fetched values
+            setIsEditing(false);
+        }
     }
     
     if (authLoading || pageLoading) {
@@ -93,7 +102,7 @@ export default function StudentProfilePage() {
                 <Card className="border-primary bg-primary/5">
                     <CardHeader>
                         <CardTitle>Welcome!</CardTitle>
-                        <CardDescription>Please complete your profile to continue.</CardDescription>
+                        <CardDescription>Please complete your profile to continue. You can do this later if you wish.</CardDescription>
                     </CardHeader>
                 </Card>
             )}
@@ -152,7 +161,7 @@ export default function StudentProfilePage() {
                                     <FormItem>
                                         <FormLabel>Batch</FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={!isEditing} placeholder="e.g. 2021-2025"/>
+                                            <Input {...field} disabled={!isEditing} placeholder="e.g. BCS2A, F4"/>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -173,7 +182,7 @@ export default function StudentProfilePage() {
                             />
                             {isEditing && (
                                 <div className="flex justify-end gap-2">
-                                    <Button type="button" variant="outline" onClick={handleCancel} disabled={profileNeedsUpdate}>Cancel</Button>
+                                    <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
                                     <Button type="submit">Save Changes</Button>
                                 </div>
                             )}
