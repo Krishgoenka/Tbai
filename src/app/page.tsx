@@ -18,7 +18,11 @@ function AnimatedHeading() {
     const [loopNum, setLoopNum] = useState(0);
     const [typingSpeed, setTypingSpeed] = useState(150);
 
-    const phrases = useMemo(() => ["Empower Your Workforce.", "Elevate Your Students.", "Engineer Your Future."], []);
+    const phrases = useMemo(() => [
+        "Empowering 1 Billion Minds with AI.",
+        "Bridging India’s AI Education Divide.",
+        "AI for Every Student, Everywhere."
+    ], []);
 
     useEffect(() => {
         const handleTyping = () => {
@@ -118,8 +122,8 @@ export default function Home() {
       <main className="flex-1">
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 text-center py-20 md:py-32">
           <AnimatedHeading />
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
-            Streamline employee tasks, manage student assignments, and unlock powerful insights with our all-in-one AI platform.
+          <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
+            Our mission is to democratize AI education and innovation, bridging the gap between urban metros and underserved regions across India.
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
@@ -146,10 +150,10 @@ export default function Home() {
                   <div className="p-4 bg-primary/10 rounded-full">
                     <Users className="h-8 w-8 text-primary" />
                   </div>
-                  <CardTitle className="pt-4">Empower Administrators</CardTitle>
+                  <CardTitle className="pt-4">Empower a Billion People</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  To provide powerful, intuitive tools that simplify employee and student management, freeing up valuable time for what matters most.
+                  To democratize AI education, providing one billion individuals with access to AI tools, training, and mentorship by 2027.
                 </CardContent>
               </Card>
               <Card>
@@ -157,10 +161,10 @@ export default function Home() {
                   <div className="p-4 bg-primary/10 rounded-full">
                     <GraduationCap className="h-8 w-8 text-primary" />
                   </div>
-                  <CardTitle className="pt-4">Elevate Student Success</CardTitle>
+                  <CardTitle className="pt-4">Create AI Hubs</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  To create a seamless digital environment for students to engage with assignments and track their academic journey.
+                  To launch AI-powered labs and innovation centers in Tier 2 & 3 regions, closing the urban-rural education divide.
                 </CardContent>
               </Card>
               <Card>
@@ -168,10 +172,10 @@ export default function Home() {
                    <div className="p-4 bg-primary/10 rounded-full">
                     <Bot className="h-8 w-8 text-primary" />
                   </div>
-                  <CardTitle className="pt-4">Innovate with AI</CardTitle>
+                  <CardTitle className="pt-4">Foster Innovation</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  To leverage the cutting-edge of artificial intelligence to deliver smart insights and drive efficiency in educational and organizational workflows.
+                  To equip institutions with advanced AI tools and foster a culture where every student can create, innovate, and solve real-world problems.
                 </CardContent>
               </Card>
             </div>
