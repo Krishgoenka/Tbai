@@ -30,7 +30,7 @@ const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl:
     dueTime: z.string().min(1, "Due time is required."),
     title: z.string().min(3, "Title is required."),
     description: z.string().min(10, "Description is required."),
-    file: z.any().optional(), // Keep for client-side validation
+    file: z.any().optional(),
 });
 
 
@@ -62,6 +62,7 @@ export function AddAssignmentDialog() {
         
         formData.append("dueDate", combinedDueDate);
         formData.append("status", status);
+        // The other fields (title, description, file) are already in formData from the form elements.
         
         const result = await addAssignment(formData);
 
@@ -172,20 +173,24 @@ export function AddAssignmentDialog() {
                     <FormField
                         control={form.control}
                         name="file"
-                        render={({ field }) => (
+                        render={({ field: { onChange, value, ...rest } }) => (
                             <FormItem className="grid grid-cols-4 items-center gap-4">
                                 <FormLabel className="text-right">PDF File</FormLabel>
                                 <FormControl>
                                     <Input 
+                                        {...rest}
                                         id="file" 
                                         name="file" // Name attribute is crucial for FormData
                                         type="file" 
                                         accept=".pdf,.png,.jpg,.jpeg" 
                                         className="col-span-3" 
-                                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            onChange(file);
+                                        }}
                                     />
                                 </FormControl>
-                                <FormMessage className="col-span-4" />
+                                <FormMessage className="col-span-4 pl-[25%]" />
                             </FormItem>
                         )}
                     />
