@@ -3,7 +3,7 @@
 
 import { z } from "zod"
 import { assignmentSchema } from "./schema"
-import { addAssignment as dbAddAssignment, updateAssignment as dbUpdateAssignment, deleteAssignment as dbDeleteAssignment, updateAssignmentStatus as dbUpdateAssignmentStatus } from "@/lib/assignment-data"
+import { addAssignment as dbAddAssignment, updateAssignment, deleteAssignment, updateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
 
 // This schema is what the form provides to the action. It no longer includes status.
@@ -38,10 +38,10 @@ export async function addAssignment(
     }
 }
 
-export async function updateAssignment(data: z.infer<typeof updateAssignmentFormSchema>) {
+export async function updateAssignmentAction(data: z.infer<typeof updateAssignmentFormSchema>) {
     try {
         const validatedData = updateAssignmentFormSchema.parse(data);
-        await dbUpdateAssignment(validatedData.id, validatedData);
+        await updateAssignment(validatedData.id, validatedData);
 
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
@@ -55,9 +55,9 @@ export async function updateAssignment(data: z.infer<typeof updateAssignmentForm
     }
 }
 
-export async function updateAssignmentStatus(id: string, status: "Published" | "Draft") {
+export async function updateAssignmentStatusAction(id: string, status: "Published" | "Draft") {
     try {
-        await dbUpdateAssignmentStatus(id, status);
+        await updateAssignmentStatus(id, status);
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
         return { success: true, message: `Assignment has been ${status === 'Published' ? 'published' : 'unpublished'}.` };
@@ -66,9 +66,9 @@ export async function updateAssignmentStatus(id: string, status: "Published" | "
     }
 }
 
-export async function deleteAssignment(id: string) {
+export async function deleteAssignmentAction(id: string) {
     try {
-        await dbDeleteAssignment(id);
+        await deleteAssignment(id);
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
         return { success: true, message: "Assignment deleted successfully." };

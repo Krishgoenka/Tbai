@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { updateAssignment } from "./actions"
+import { updateAssignmentAction } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
@@ -70,7 +70,7 @@ export function EditAssignmentDialog({ assignment, children, open, onOpenChange 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
 
-        const result = await updateAssignment({
+        const result = await updateAssignmentAction({
            id: values.id,
            title: values.title,
            description: values.description,

@@ -27,7 +27,7 @@ import { assignmentSchema } from "./schema"
 import { EditAssignmentDialog } from "./edit-assignment-dialog"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { deleteAssignment, updateAssignmentStatus } from "./actions"
+import { deleteAssignmentAction, updateAssignmentStatusAction } from "./actions"
 
 
 interface DataTableRowActionsProps<TData> {
@@ -44,7 +44,7 @@ export function DataTableRowActions<TData>({
 
 
   const handleStatusChange = async (status: "Published" | "Draft") => {
-     const result = await updateAssignmentStatus(assignment.id, status);
+     const result = await updateAssignmentStatusAction(assignment.id, status);
       if (result.success) {
             toast({
                 title: "Success",
@@ -60,7 +60,7 @@ export function DataTableRowActions<TData>({
   }
 
   const handleDelete = async () => {
-    const result = await deleteAssignment(assignment.id);
+    const result = await deleteAssignmentAction(assignment.id);
      if (result.success) {
         toast({
             title: "Success",
