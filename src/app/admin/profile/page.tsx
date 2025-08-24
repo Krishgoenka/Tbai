@@ -10,14 +10,15 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 
 export default function AdminProfilePage() {
-    const { user, loading } = useAuth();
+    const { user, loading, profileNeedsUpdate } = useAuth();
     const { toast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -26,11 +27,21 @@ export default function AdminProfilePage() {
         if (user) {
             setName(user.displayName || "");
             setEmail(user.email || "");
+            // If the auth hook determines the profile needs an update, start in edit mode.
+            if (profileNeedsUpdate) {
+                setIsEditing(true);
+            }
         }
-    }, [user]);
+        if (!loading) {
+            setPageLoading(false);
+        }
+    }, [user, loading, profileNeedsUpdate]);
 
     const handleSave = async () => {
-        if (!user) return;
+        if (!user || !name) {
+            toast({ title: "Error", description: "Full name is required.", variant: "destructive" });
+            return;
+        }
 
         try {
             // Update Firebase Auth profile
@@ -58,18 +69,29 @@ export default function AdminProfilePage() {
     const handleCancel = () => {
         if (user) {
             setName(user.displayName || "");
-            setEmail(user.email || "");
         }
         setIsEditing(false);
     }
 
-    if (loading || !user) {
+    if (pageLoading) {
         return <p>Loading profile...</p>
+    }
+
+     if (!user) {
+        return <p>Please log in to view your profile.</p>
     }
 
   return (
     <div className="space-y-8">
         <h1 className="text-3xl font-bold">My Profile</h1>
+         {profileNeedsUpdate && isEditing && (
+            <Card className="border-primary bg-primary/5">
+                <CardHeader>
+                    <CardTitle>Welcome!</CardTitle>
+                    <CardDescription>Please update your full name to continue.</CardDescription>
+                </CardHeader>
+            </Card>
+        )}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -101,7 +123,7 @@ export default function AdminProfilePage() {
                 </div>
                 {isEditing && (
                     <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                        <Button variant="outline" onClick={handleCancel} disabled={profileNeedsUpdate}>Cancel</Button>
                         <Button onClick={handleSave}>Save Changes</Button>
                     </div>
                 )}

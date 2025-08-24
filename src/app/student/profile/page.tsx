@@ -20,7 +20,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function StudentProfilePage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, profileNeedsUpdate } = useAuth();
     const { toast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
@@ -55,8 +55,12 @@ export default function StudentProfilePage() {
         }
         if (!authLoading) {
             fetchProfile();
+            // If the auth hook determines the profile needs an update, start in edit mode.
+            if (profileNeedsUpdate) {
+                setIsEditing(true);
+            }
         }
-    }, [user, authLoading, form]);
+    }, [user, authLoading, form, profileNeedsUpdate]);
 
     const onSubmit = async (data: z.infer<typeof studentProfileSchema>) => {
         if (!user) return;
@@ -85,6 +89,14 @@ export default function StudentProfilePage() {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold">My Profile</h1>
+            {profileNeedsUpdate && isEditing && (
+                <Card className="border-primary bg-primary/5">
+                    <CardHeader>
+                        <CardTitle>Welcome!</CardTitle>
+                        <CardDescription>Please complete your profile to continue.</CardDescription>
+                    </CardHeader>
+                </Card>
+            )}
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
@@ -161,7 +173,7 @@ export default function StudentProfilePage() {
                             />
                             {isEditing && (
                                 <div className="flex justify-end gap-2">
-                                    <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
+                                    <Button type="button" variant="outline" onClick={handleCancel} disabled={profileNeedsUpdate}>Cancel</Button>
                                     <Button type="submit">Save Changes</Button>
                                 </div>
                             )}

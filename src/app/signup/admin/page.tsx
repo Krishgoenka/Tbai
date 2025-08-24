@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,39 +27,28 @@ export default function AdminSignupPage() {
       toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
       return;
     }
+     if (!fullName) {
+      toast({ title: "Error", description: "Full name is required.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
-      // We'll set the role in a temporary session storage item.
-      // The AuthProvider will pick this up after redirect.
+      // We'll set the role and name in temporary session storage.
+      // The AuthProvider will pick this up after redirect to create the user doc.
       window.sessionStorage.setItem('signupRole', 'admin');
+      window.sessionStorage.setItem('signupName', fullName);
       
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email, password);
       // The onAuthStateChanged listener in AuthProvider will handle document creation and redirection.
-      toast({ title: "Success", description: "Admin account created successfully! Redirecting..." });
+      toast({ title: "Success", description: "Admin account created! Redirecting to complete profile..." });
 
     } catch (error: any) {
       console.error("Signup Error:", error);
       toast({ title: "Signup Error", description: error.message, variant: "destructive" });
       window.sessionStorage.removeItem('signupRole');
+      window.sessionStorage.removeItem('signupName');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    setLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      window.sessionStorage.setItem('signupRole', 'admin');
-      await signInWithPopup(auth, provider);
-      // The useAuth hook will handle user creation/checking and redirection.
-      toast({ title: "Success", description: "Signed up successfully! Redirecting..." });
-    } catch (error: any) {
-       console.error("Google Signup Error:", error);
-       toast({ title: "Google Signup Error", description: error.message, variant: "destructive" });
-       window.sessionStorage.removeItem('signupRole');
-    } finally {
-        setLoading(false);
     }
   };
 
@@ -79,15 +68,15 @@ export default function AdminSignupPage() {
           <form onSubmit={handleSignUp} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="full-name">Full Name</Label>
-              <Input id="full-name" placeholder="Max Robinson" required onChange={(e) => setFullName(e.target.value)} disabled={loading} />
+              <Input id="full-name" placeholder="Max Robinson" required value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={loading} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} disabled={loading}/>
+              <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading}/>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={loading} />
+              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Creating Account..." : "Create Admin Account"}
