@@ -3,7 +3,7 @@
 
 import { z } from "zod"
 import { assignmentSchema } from "./schema"
-import { addAssignment as dbAddAssignment, updateAssignment, deleteAssignment, updateAssignmentStatus } from "@/lib/assignment-data"
+import { addAssignment, updateAssignment, deleteAssignment, updateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
 
 // This schema is what the form provides to the action. It no longer includes status.
@@ -23,7 +23,7 @@ export async function addAssignment(
         // Add the status to the data before sending to the database function
         const assignmentDataWithStatus = { ...validatedData, status };
 
-        await dbAddAssignment(assignmentDataWithStatus, file);
+        await addAssignment(assignmentDataWithStatus, file);
 
         revalidatePath("/admin/assignments");
         revalidatePath("/student");

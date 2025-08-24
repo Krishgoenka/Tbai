@@ -54,6 +54,24 @@ export default function AdminDashboardPage() {
       <div>
         <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="flex flex-col">
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-md">
+                            <Book className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle>Manage Assignments</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                <CardDescription>Create, publish, and track student assignments.</CardDescription>
+                </CardContent>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin/assignments">Go to Assignments <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                    </Button>
+                </CardContent>
+            </Card>
           <Card className="flex flex-col">
             <CardHeader>
                 <div className="flex items-center gap-4">
