@@ -52,9 +52,15 @@ export default function Home() {
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
               <Link href="/login">
-                <LogIn className="mr-2"/>
-                Login to Your Account
+                <UserCog className="mr-2"/>
+                Admin Login
               </Link>
+            </Button>
+            <Button size="lg" variant="secondary" asChild>
+                <Link href="/signup">
+                    <UserPlus className="mr-2" />
+                    Student Signup
+                </Link>
             </Button>
           </div>
         </section>
