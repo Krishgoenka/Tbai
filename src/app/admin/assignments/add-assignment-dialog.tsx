@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { assignmentSchema } from "./schema"
 
+// This schema is only for the form fields, not the final database object.
 const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true }).extend({
     dueDate: z.string().min(1, "Due date is required."),
     dueTime: z.string().min(1, "Due time is required."),
@@ -59,14 +60,9 @@ export function AddAssignmentDialog() {
         const values = form.getValues();
         // Combine date and time and convert to a full ISO string
         const combinedDueDate = new Date(`${values.dueDate}T${values.dueTime}`).toISOString();
-
-        const assignmentData = {
-           ...values,
-           dueDate: combinedDueDate, // Use the correct ISO string
-        };
         
-        // The 'file' property from the form is of type `File`, which is what the action expects.
-        const result = await addAssignment(assignmentData, status, values.file);
+        // Pass the validated form data, the combined due date, the status, and the file to the action
+        const result = await addAssignment(values, combinedDueDate, status, values.file);
 
         if (result.success) {
             toast({

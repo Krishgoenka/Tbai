@@ -6,24 +6,30 @@ import { assignmentSchema } from "./schema"
 import { addAssignment as dbAddAssignment, updateAssignment, deleteAssignment, updateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
 
-// This schema is what the form provides to the action. It no longer includes status.
-const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true });
+// This schema validates the data coming from the form, excluding fields that aren't on it.
+const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true });
+
 // Schema for updating, omits fields not on the form.
 const updateAssignmentFormSchema = assignmentSchema.omit({ submissions: true, fileUrl: true });
 
 
 export async function addAssignment(
     data: z.infer<typeof addAssignmentFormSchema>,
+    dueDate: string, // Receive dueDate separately
     status: "Published" | "Draft",
     file?: File
 ) {
     try {
         const validatedData = addAssignmentFormSchema.parse(data);
 
-        // Add the status to the data before sending to the database function
-        const assignmentDataWithStatus = { ...validatedData, status };
+        // Construct the full assignment object AFTER validation
+        const fullAssignmentData = {
+            ...validatedData,
+            dueDate,
+            status,
+        };
 
-        await dbAddAssignment(assignmentDataWithStatus, file);
+        await dbAddAssignment(fullAssignmentData, file);
 
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
@@ -32,11 +38,9 @@ export async function addAssignment(
         if (error instanceof z.ZodError) {
             return { success: false, message: error.errors.map(e => e.message).join(", ") };
         }
-        // Provide more specific error feedback if possible
         if (error instanceof Error) {
             return { success: false, message: error.message };
         }
-        console.error("Error in addAssignment action:", error);
         return { success: false, message: "An unknown error occurred while adding the assignment." };
     }
 }

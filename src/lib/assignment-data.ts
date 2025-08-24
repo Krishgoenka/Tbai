@@ -7,7 +7,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const assignmentsCollection = collection(db, 'assignments');
 
-// Define a more specific type for the data coming into the add function
+// The data coming into this function should be the complete object to be saved.
 type AddAssignmentData = Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>;
 
 export async function getAssignments(options?: { publishedOnly?: boolean }): Promise<Assignment[]> {
@@ -40,7 +40,7 @@ export async function addAssignment(
     file?: File
 ) {
     try {
-        let fileUrl = ""; // Start with an empty string
+        let fileUrl = "";
 
         if (file) {
             const storageRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
@@ -51,7 +51,7 @@ export async function addAssignment(
         const newAssignment: Omit<Assignment, 'id'> = {
             ...assignmentData,
             submissions: 0,
-            fileUrl: fileUrl, // fileUrl will be an empty string if no file is uploaded
+            fileUrl: fileUrl,
         };
 
         const docRef = await addDoc(assignmentsCollection, newAssignment);
@@ -69,7 +69,7 @@ export async function updateAssignment(id: string, updatedData: Partial<Omit<Ass
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment: ", error);
-        return { success: false };
+        return { success: false, message: "Database update failed." };
     }
 }
 
@@ -81,7 +81,7 @@ export async function updateAssignmentStatus(id: string, status: "Published" | "
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment status: ", error);
-        return { success: false };
+        return { success: false, message: "Database status update failed." };
     }
 }
 
@@ -92,6 +92,6 @@ export async function deleteAssignment(id: string) {
         return { success: true };
     } catch (error) {
         console.error("Error deleting assignment: ", error);
-        return { success: false };
+        return { success: false, message: "Database deletion failed." };
     }
 }
