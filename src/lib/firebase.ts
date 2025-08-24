@@ -1,18 +1,18 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
-// This is hardcoded to prevent environment variable issues.
+// Your web app's Firebase configuration pulled from environment variables
 const firebaseConfig = {
-  projectId: "technobillion-ai-platform",
-  appId: "1:543559355076:web:b3f7e5a07c3dcb6bfad791",
-  storageBucket: "technobillion-ai-platform.appspot.com",
-  apiKey: "AIzaSyBrT_oYIYok1KwSmzAeZir73hCVafilbTg",
-  authDomain: "technobillion-ai-platform.firebaseapp.com",
-  messagingSenderId: "543559355076"
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
 };
 
 // Initialize Firebase for Singleton Pattern
