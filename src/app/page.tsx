@@ -17,10 +17,10 @@ function AnimatedHeading() {
     const [text, setText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
     const [loopNum, setLoopNum] = useState(0);
-    const [typingSpeed, setTypingSpeed] = useState(150);
+    const [typingSpeed, setTypingSpeed] = useState(120);
 
     const phrases = useMemo(() => [
-        "Empowering 1 Billion Minds with AI.",
+        "Empowering One Billion Minds with AI.",
         "Bridging India’s AI Education Divide.",
         "AI for Every Student, Everywhere."
     ], []);
@@ -36,7 +36,7 @@ function AnimatedHeading() {
                 setText(fullText.substring(0, text.length + 1));
             }
 
-            setTypingSpeed(isDeleting ? 80 : 150);
+            setTypingSpeed(isDeleting ? 50 : 120);
 
             if (!isDeleting && text === fullText) {
                 setTimeout(() => setIsDeleting(true), 2000);
