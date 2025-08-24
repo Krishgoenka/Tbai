@@ -20,6 +20,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const ADMIN_EMAILS = ["goenkakrish02@gmail.com", "tbaiadmin@gmail.com"];
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [userRole, setUserRole] = useState<UserRole>(null);
@@ -38,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const signupRole = window.sessionStorage.getItem('signupRole');
             const signupName = window.sessionStorage.getItem('signupName');
 
-            const isAdminEmail = firebaseUser.email === 'goenkakrish02@gmail.com';
+            const isAdminEmail = firebaseUser.email ? ADMIN_EMAILS.includes(firebaseUser.email) : false;
             let determinedRole: UserRole = isAdminEmail ? 'admin' : 'student';
 
             if (userDoc.exists()) {

@@ -14,7 +14,7 @@ import { Bot, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 
-const ADMIN_EMAIL = "goenkakrish02@gmail.com";
+const ADMIN_EMAILS = ["goenkakrish02@gmail.com", "tbaiadmin@gmail.com"];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -27,8 +27,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Explicitly check if the email is the admin email.
-    if (email !== ADMIN_EMAIL) {
+    // Explicitly check if the email is an admin email.
+    if (!ADMIN_EMAILS.includes(email)) {
         toast({
             title: "Authorization Error",
             description: "You are not authorized to access the admin panel.",
