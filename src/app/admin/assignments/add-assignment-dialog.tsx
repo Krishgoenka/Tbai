@@ -57,13 +57,15 @@ export function AddAssignmentDialog() {
         setSubmittingStatus(status);
         
         const values = form.getValues();
-        const combinedDueDate = `${values.dueDate}T${values.dueTime}`;
+        // Combine date and time and convert to a full ISO string
+        const combinedDueDate = new Date(`${values.dueDate}T${values.dueTime}`).toISOString();
 
         const assignmentData = {
            ...values,
-           dueDate: new Date(combinedDueDate).toISOString(),
+           dueDate: combinedDueDate, // Use the correct ISO string
         };
         
+        // The 'file' property from the form is of type `File`, which is what the action expects.
         const result = await addAssignment(assignmentData, status, values.file);
 
         if (result.success) {

@@ -40,7 +40,7 @@ export async function addAssignment(
     file?: File
 ) {
     try {
-        let fileUrl = "/placeholder.pdf"; // Default placeholder
+        let fileUrl = ""; // Start with an empty string
 
         if (file) {
             const storageRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
@@ -51,14 +51,14 @@ export async function addAssignment(
         const newAssignment: Omit<Assignment, 'id'> = {
             ...assignmentData,
             submissions: 0,
-            fileUrl: fileUrl,
+            fileUrl: fileUrl, // fileUrl will be an empty string if no file is uploaded
         };
 
         const docRef = await addDoc(assignmentsCollection, newAssignment);
         return { success: true, id: docRef.id };
     } catch (error) {
         console.error("Error adding assignment: ", error);
-        throw new Error("Failed to add assignment.");
+        throw new Error("Failed to add assignment to the database.");
     }
 }
 

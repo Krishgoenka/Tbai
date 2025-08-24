@@ -32,6 +32,10 @@ export async function addAssignment(
         if (error instanceof z.ZodError) {
             return { success: false, message: error.errors.map(e => e.message).join(", ") };
         }
+        // Provide more specific error feedback if possible
+        if (error instanceof Error) {
+            return { success: false, message: error.message };
+        }
         console.error("Error in addAssignment action:", error);
         return { success: false, message: "An unknown error occurred while adding the assignment." };
     }
