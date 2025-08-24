@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookCheck, Briefcase, Book, ArrowRight } from "lucide-react";
+import { Users, BookCheck, Briefcase, Book, ArrowRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getEmployees } from "@/lib/employee-data";
@@ -71,7 +71,7 @@ export default async function AdminDashboardPage() {
 
       <div>
         <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="flex flex-col">
                 <CardHeader>
                     <div className="flex items-center gap-4">
@@ -108,6 +108,42 @@ export default async function AdminDashboardPage() {
                 </Button>
             </CardContent>
           </Card>
+            <Card className="flex flex-col">
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-md">
+                            <GraduationCap className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle>Manage Students</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <CardDescription>View and manage all registered student accounts.</CardDescription>
+                </CardContent>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin/students">Go to Students <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                    </Button>
+                </CardContent>
+            </Card>
+            <Card className="flex flex-col">
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-md">
+                            <BookCheck className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle>Manage Submissions</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <CardDescription>View and grade all student submissions.</CardDescription>
+                </CardContent>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin/submissions">Go to Submissions <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
       </div>
 
