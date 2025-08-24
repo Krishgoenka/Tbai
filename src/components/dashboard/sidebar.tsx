@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
+import Image from "next/image"
 
 type IconName = keyof typeof LucideIcons;
 
@@ -39,7 +41,7 @@ export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
     <Sidebar>
         <SidebarHeader>
           <Link href="/" className="flex items-center gap-2">
-            <Bot className="h-8 w-8 text-primary" />
+             <Image src="/tbai.jpg" alt="TechnoBillion AI Logo" width={32} height={32} className="rounded-md" />
             <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">TechnoBillion</span>
           </Link>
         </SidebarHeader>
@@ -75,3 +77,5 @@ export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
     </Sidebar>
   )
 }
+
+    
