@@ -1,8 +1,10 @@
 
 import { AddAssignmentDialog } from './add-assignment-dialog';
 import { AssignmentDataTable } from './assignment-data-table';
+import { getAssignments } from '@/lib/assignment-data';
 
 export default async function AssignmentsPage() {
+  const assignments = await getAssignments();
 
   return (
     <div className="space-y-8">
@@ -10,7 +12,7 @@ export default async function AssignmentsPage() {
         <h1 className="text-3xl font-bold">Assignments</h1>
         <AddAssignmentDialog />
       </div>
-      <AssignmentDataTable />
+      <AssignmentDataTable assignments={assignments} />
     </div>
   );
 }

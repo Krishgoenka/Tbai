@@ -39,29 +39,27 @@ export async function addAssignment(
     assignmentData: AddAssignmentData, 
     file?: File
 ) {
-    // try {
-    //     let fileUrl = "";
+    try {
+        let fileUrl = "";
 
-    //     if (file) {
-    //         const storageRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
-    //         const snapshot = await uploadBytes(storageRef, file);
-    //         fileUrl = await getDownloadURL(snapshot.ref);
-    //     }
+        if (file) {
+            const storageRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            fileUrl = await getDownloadURL(snapshot.ref);
+        }
 
-    //     const newAssignment: Omit<Assignment, 'id'> = {
-    //         ...assignmentData,
-    //         submissions: 0,
-    //         fileUrl: fileUrl,
-    //     };
+        const newAssignment: Omit<Assignment, 'id'> = {
+            ...assignmentData,
+            submissions: 0,
+            fileUrl: fileUrl,
+        };
 
-    //     const docRef = await addDoc(assignmentsCollection, newAssignment);
-    //     return { success: true, id: docRef.id };
-    // } catch (error) {
-    //     console.error("Error adding assignment: ", error);
-    //     throw new Error("Failed to add assignment to the database.");
-    // }
-    console.log("Database call skipped. Simulating success for:", assignmentData);
-    return { success: true, id: "fake-assignment-id" };
+        const docRef = await addDoc(assignmentsCollection, newAssignment);
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error("Error adding assignment: ", error);
+        throw new Error("Failed to add assignment to the database.");
+    }
 }
 
 export async function updateAssignment(id: string, updatedData: Partial<Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>>) {
@@ -97,4 +95,3 @@ export async function deleteAssignment(id: string) {
         throw new Error("Database deletion failed.");
     }
 }
-

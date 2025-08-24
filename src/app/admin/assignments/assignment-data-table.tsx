@@ -1,44 +1,15 @@
 
 "use client"
 
-import { useEffect, useState } from 'react';
-import { getAssignments } from '@/lib/assignment-data';
-import { columns } from './columns';
 import { DataTable } from '../employees/data-table';
+import { columns } from './columns';
 import type { Assignment } from './schema';
-import { Skeleton } from '@/components/ui/skeleton';
 
-export function AssignmentDataTable() {
-    const [assignments, setAssignments] = useState<Assignment[]>([]);
-    const [loading, setLoading] = useState(true);
+interface AssignmentDataTableProps {
+    assignments: Assignment[];
+}
 
-    useEffect(() => {
-        async function loadAssignments() {
-            setLoading(true);
-            const data = await getAssignments();
-            setAssignments(data);
-            setLoading(false);
-        }
-        loadAssignments();
-    }, []);
-
-    if (loading) {
-        return (
-             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <Skeleton className="h-8 w-[250px]" />
-                </div>
-                <div className="rounded-md border">
-                    <div className="space-y-3 p-4">
-                        <Skeleton className="h-5 w-full" />
-                        <Skeleton className="h-5 w-full" />
-                        <Skeleton className="h-5 w-full" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+export function AssignmentDataTable({ assignments }: AssignmentDataTableProps) {
     return (
         <DataTable
             data={assignments}
