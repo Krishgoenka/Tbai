@@ -104,7 +104,14 @@ export default function Home() {
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
         <nav className="flex items-center gap-4">
-            {/* Login and Signup buttons removed as requested */}
+            <Link href="https://www.linkedin.com/company/techno-billion-ai/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                <Linkedin className="h-6 w-6" />
+                <span className="sr-only">LinkedIn</span>
+            </Link>
+             <Link href="https://www.instagram.com/technobillionai?igsh=MXV6ZXB5c2hpZ2wwcw==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                <InstagramIcon className="h-6 w-6" />
+                <span className="sr-only">Instagram</span>
+            </Link>
         </nav>
       </header>
 
@@ -174,11 +181,11 @@ export default function Home() {
 
       <footer className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-muted-foreground">
         <div className="flex justify-center gap-6 mb-4">
-            <Link href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+            <Link href="https://www.linkedin.com/company/techno-billion-ai/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                 <Linkedin className="h-6 w-6" />
                 <span className="sr-only">LinkedIn</span>
             </Link>
-             <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+             <Link href="https://www.instagram.com/technobillionai?igsh=MXV6ZXB5c2hpZ2wwcw==" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                 <InstagramIcon className="h-6 w-6" />
                 <span className="sr-only">Instagram</span>
             </Link>
