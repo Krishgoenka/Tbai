@@ -105,7 +105,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/tbai.jpg" alt="Techno Billion AI Logo" width={32} height={32} className="rounded-md" />
+          <img src="/tbai.jpg" alt="Techno Billion AI Logo" className="h-8 w-8 rounded-md" />
           <span className="text-xl font-bold">Techno Billion AI</span>
         </Link>
         <nav className="flex items-center gap-4">
@@ -165,7 +165,7 @@ export default function Home() {
                   <CardTitle className="pt-4">Create AI Hubs</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  To launch AI-powered labs and innovation centers in Tier 2 & 3 regions, closing the urban-rural education divide.
+                  To launch AI-powered labs and innovation centers in Tier 2 &amp; 3 regions, closing the urban-rural education divide.
                 </CardContent>
               </Card>
               <Card>

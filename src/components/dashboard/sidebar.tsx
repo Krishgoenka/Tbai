@@ -41,7 +41,7 @@ export function DashboardSidebar({ navItems }: DashboardSidebarProps) {
     <Sidebar>
         <SidebarHeader>
           <Link href="/" className="flex items-center gap-2">
-             <Image src="/tbai.jpg" alt="Techno Billion AI Logo" width={32} height={32} className="rounded-md" />
+             <img src="/tbai.jpg" alt="Techno Billion AI Logo" className="h-8 w-8 rounded-md" />
             <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">Techno Billion</span>
           </Link>
         </SidebarHeader>
