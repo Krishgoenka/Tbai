@@ -4,10 +4,27 @@
 import { z } from "zod"
 import { employeeSchema, taskSchema } from "./schema"
 import { revalidatePath } from "next/cache"
-import { updateEmployeeData, deleteEmployeeData, addEmployeeTask, deleteEmployeeTask } from "@/lib/employee-data"
+import { updateEmployeeData, deleteEmployeeData, addEmployeeTask, deleteEmployeeTask, addEmployeeData } from "@/lib/employee-data"
 
+const addEmployeeFormSchema = employeeSchema.omit({ id: true, tasks: true });
 const updateEmployeeFormSchema = employeeSchema.omit({ id: true, tasks: true });
 const addTaskFormSchema = taskSchema.omit({ id: true });
+
+
+export async function addEmployee(data: z.infer<typeof addEmployeeFormSchema>) {
+    try {
+        const validatedData = addEmployeeFormSchema.parse(data);
+        await addEmployeeData(validatedData);
+        revalidatePath("/admin/employees");
+        return { success: true, message: "Employee added successfully." };
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, message: error.errors.map(e => e.message).join(", ") };
+        }
+        console.error(error);
+        return { success: false, message: "An unknown error occurred." };
+    }
+}
 
 export async function updateEmployee(id: string, data: z.infer<typeof updateEmployeeFormSchema>) {
     try {

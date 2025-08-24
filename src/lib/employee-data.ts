@@ -19,13 +19,17 @@ export async function getEmployees() {
   }
 }
 
-export async function addEmployeeData(employee: Omit<Employee, 'id'>) {
+export async function addEmployeeData(employee: Omit<Employee, 'id' | 'tasks'>) {
     try {
-        const docRef = await addDoc(employeesCollection, employee);
-        return { ...employee, id: docRef.id };
+        const newEmployee = {
+            ...employee,
+            tasks: [], // Start with an empty task list
+        };
+        const docRef = await addDoc(employeesCollection, newEmployee);
+        return { ...newEmployee, id: docRef.id };
     } catch (error) {
         console.error("Error adding employee: ", error);
-        throw new Error("Failed to add employee.");
+        throw new Error("Failed to add employee to the database.");
     }
 }
 
