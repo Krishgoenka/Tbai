@@ -19,11 +19,15 @@ import { useAuth } from "@/hooks/use-auth"
 export function UserNav() {
   const { user, userRole, logout } = useAuth();
 
+  if (!user) {
+    return null; // Or a loading skeleton
+  }
+
   const profileLink = userRole === 'admin' ? '/admin/profile' : '/student/profile';
-  const displayName = user?.displayName || 'Demo User';
-  const email = user?.email || 'demo@example.com';
-  const fallback = displayName ? displayName.charAt(0).toUpperCase() : "D";
-  const photoURL = user?.photoURL || `https://placehold.co/100x100.png`;
+  const displayName = user.displayName || "User";
+  const email = user.email || "";
+  const fallback = displayName ? displayName.charAt(0).toUpperCase() : "U";
+  const photoURL = user.photoURL || `https://placehold.co/100x100.png`;
 
   return (
     <DropdownMenu>
