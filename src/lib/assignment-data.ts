@@ -22,6 +22,7 @@ export async function getAssignments(options?: { publishedOnly?: boolean }): Pro
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
+    // Ensure submissions is a number, default to 0 if it's missing
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
     
     return z.array(assignmentSchema).parse(validatedAssignments);
@@ -48,10 +49,7 @@ export async function addAssignment(
         }
 
         const newAssignment: Omit<Assignment, 'id'> = {
-            title: assignmentData.title,
-            description: assignmentData.description,
-            dueDate: assignmentData.dueDate,
-            status: assignmentData.status,
+            ...assignmentData, // This now includes status
             submissions: 0,
             fileUrl: fileUrl,
         };
