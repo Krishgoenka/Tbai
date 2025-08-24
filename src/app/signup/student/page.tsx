@@ -37,7 +37,8 @@ export default function StudentSignupPage() {
       window.sessionStorage.setItem('signupRole', 'student');
       window.sessionStorage.setItem('signupName', fullName);
       await createUserWithEmailAndPassword(auth, email, password);
-      toast({ title: "Success", description: "Account created! Redirecting to complete profile..." });
+      toast({ title: "Success", description: "Account created successfully! Please log in." });
+      router.push("/login");
     } catch (error: any) {
       console.error("Signup Error:", error);
       toast({ title: "Signup Error", description: error.message, variant: "destructive" });
