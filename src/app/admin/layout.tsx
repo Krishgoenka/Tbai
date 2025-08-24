@@ -7,6 +7,7 @@ const adminNavItems = [
   { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/admin/assignments", label: "Assignments", icon: "Book" },
   { href: "/admin/submissions", label: "Submissions", icon: "BookCheck" },
+  { href: "/admin/students", label: "Students", icon: "GraduationCap" },
   { href: "/admin/employees", label: "Employees", icon: "Users" },
 ];
 
