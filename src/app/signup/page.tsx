@@ -28,7 +28,7 @@ export default function SignupPage() {
               </CardHeader>
             </Card>
           </Link>
-          {/* 
+          
           <Link href="/signup/admin" className="block">
              <Card className="hover:bg-accent hover:border-primary transition-all">
                <CardHeader className="flex flex-row items-center gap-4">
@@ -42,7 +42,7 @@ export default function SignupPage() {
               </CardHeader>
             </Card>
           </Link>
-          */}
+          
            <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/login" className="underline">
