@@ -12,15 +12,14 @@ type AddAssignmentData = Omit<Assignment, 'id' | 'submissions' | 'fileUrl'>;
 
 export async function getAssignments(options?: { publishedOnly?: boolean }): Promise<Assignment[]> {
   try {
-    let q;
-    if (options?.publishedOnly) {
-       q = query(assignmentsCollection, where("status", "==", "Published"), orderBy("dueDate", "desc"));
-    } else {
-      q = query(assignmentsCollection, orderBy("dueDate", "desc"));
-    }
+    const q = query(assignmentsCollection, orderBy("dueDate", "desc"));
     
     const querySnapshot = await getDocs(q);
     let assignments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    if (options?.publishedOnly) {
+      assignments = assignments.filter(a => a.status === "Published");
+    }
     
     // Ensure submissions is a number, default to 0 if it's missing
     const validatedAssignments = assignments.map(a => ({...a, submissions: a.submissions || 0}));
