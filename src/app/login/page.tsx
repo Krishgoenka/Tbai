@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -92,9 +93,11 @@ export default function LoginPage() {
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Logging in...' : 'Login'}
             </Button>
+            {/* 
             <Button onClick={handleGoogleLogin} disabled={loading} variant="outline" className="w-full">
               {loading ? 'Please wait...' : 'Login with Google'}
             </Button>
+            */}
           </form>
            <Separator className="my-6" />
            <div className="text-center">
