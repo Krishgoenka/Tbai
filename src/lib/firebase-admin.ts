@@ -1,6 +1,5 @@
 
-import { initializeApp, getApps, App, cert } from "firebase-admin/app";
-import { ServiceAccount } from "firebase-admin";
+import { initializeApp, getApps, App, cert, ServiceAccount } from "firebase-admin/app";
 
 const serviceAccount: ServiceAccount = {
     projectId: "technobillion-ai-platform",
