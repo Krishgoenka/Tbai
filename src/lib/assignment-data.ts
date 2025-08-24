@@ -69,7 +69,7 @@ export async function updateAssignment(id: string, updatedData: Partial<Omit<Ass
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment: ", error);
-        return { success: false, message: "Database update failed." };
+        throw new Error("Database update failed.");
     }
 }
 
@@ -81,7 +81,7 @@ export async function updateAssignmentStatus(id: string, status: "Published" | "
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment status: ", error);
-        return { success: false, message: "Database status update failed." };
+        throw new Error("Database status update failed.");
     }
 }
 
@@ -92,6 +92,6 @@ export async function deleteAssignment(id: string) {
         return { success: true };
     } catch (error) {
         console.error("Error deleting assignment: ", error);
-        return { success: false, message: "Database deletion failed." };
+        throw new Error("Database deletion failed.");
     }
 }

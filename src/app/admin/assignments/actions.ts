@@ -45,8 +45,7 @@ export async function addAssignment(formData: FormData) {
 export async function updateAssignmentAction(data: z.infer<typeof updateAssignmentFormSchema>) {
     try {
         const validatedData = updateAssignmentFormSchema.parse(data);
-        const result = await updateAssignment(validatedData.id, validatedData);
-        if (!result.success) throw new Error("Database update failed");
+        await updateAssignment(validatedData.id, validatedData);
 
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
@@ -62,9 +61,7 @@ export async function updateAssignmentAction(data: z.infer<typeof updateAssignme
 
 export async function updateAssignmentStatusAction(id: string, status: "Published" | "Draft") {
     try {
-        const result = await updateAssignmentStatus(id, status);
-        if (!result.success) throw new Error("Database status update failed");
-
+        await updateAssignmentStatus(id, status);
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
         return { success: true, message: `Assignment has been ${status === 'Published' ? 'published' : 'unpublished'}.` };
@@ -76,9 +73,7 @@ export async function updateAssignmentStatusAction(id: string, status: "Publishe
 
 export async function deleteAssignmentAction(id: string) {
     try {
-        const result = await deleteAssignment(id);
-        if (!result.success) throw new Error("Database deletion failed");
-
+        await deleteAssignment(id);
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
         return { success: true, message: "Assignment deleted successfully." };
