@@ -44,13 +44,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else if (signupRole) {
                 // This is a new user, create their document
                 const role = signupRole === 'admin' ? 'admin' : 'student';
-                 await setDoc(userDocRef, { 
+                const newUserDoc: any = {
                     email: firebaseUser.email, 
                     displayName: firebaseUser.displayName,
                     photoURL: firebaseUser.photoURL,
                     role: role,
                     uid: firebaseUser.uid
-                });
+                };
+                if (role === 'student') {
+                    newUserDoc.batch = "";
+                    newUserDoc.studentId = "";
+                    newUserDoc.yearOfStudy = "";
+                }
+                await setDoc(userDocRef, newUserDoc);
+
                 setUserRole(role);
                 window.sessionStorage.removeItem('signupRole'); // Clean up temp item
                  if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {

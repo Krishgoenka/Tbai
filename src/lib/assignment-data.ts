@@ -49,13 +49,13 @@ export async function addAssignment(
         }
 
         const newAssignment: Omit<Assignment, 'id'> = {
-            ...assignmentData, // This now includes status
+            ...assignmentData,
             submissions: 0,
             fileUrl: fileUrl,
         };
 
         const docRef = await addDoc(assignmentsCollection, newAssignment);
-        return { ...newAssignment, id: docRef.id };
+        return { success: true, id: docRef.id };
     } catch (error) {
         console.error("Error adding assignment: ", error);
         throw new Error("Failed to add assignment.");
@@ -69,7 +69,7 @@ export async function updateAssignment(id: string, updatedData: Partial<Omit<Ass
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment: ", error);
-        throw new Error("Failed to update assignment.");
+        return { success: false };
     }
 }
 
@@ -81,7 +81,7 @@ export async function updateAssignmentStatus(id: string, status: "Published" | "
         return { success: true };
     } catch (error) {
         console.error("Error updating assignment status: ", error);
-        throw new Error("Failed to update status.");
+        return { success: false };
     }
 }
 
@@ -92,6 +92,6 @@ export async function deleteAssignment(id: string) {
         return { success: true };
     } catch (error) {
         console.error("Error deleting assignment: ", error);
-        throw new Error("Failed to delete assignment.");
+        return { success: false };
     }
 }

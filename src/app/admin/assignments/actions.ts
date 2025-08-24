@@ -23,7 +23,6 @@ export async function addAssignment(
         // Add the status to the data before sending to the database function
         const assignmentDataWithStatus = { ...validatedData, status };
 
-        // CORRECTED: Pass the object that includes the status to the DB function.
         await dbAddAssignment(assignmentDataWithStatus, file);
 
         revalidatePath("/admin/assignments");
