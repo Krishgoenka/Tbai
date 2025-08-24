@@ -14,7 +14,7 @@ import { Bot, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 
-const ADMIN_EMAILS = ["goenkakrish02@gmail.com", "tbaiadmin@gmail.com"];
+const ADMIN_EMAILS = ["goenkakrish02@gmail.com", "tbaiadmin@gmail.com", "tbai@gmail.com"];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
