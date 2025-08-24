@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot } from "lucide-react";
+import { Bot, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -91,16 +92,20 @@ export default function LoginPage() {
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Logging in...' : 'Login'}
             </Button>
-          </form>
-            <Button onClick={handleGoogleLogin} disabled={loading} variant="outline" className="w-full mt-4">
+            <Button onClick={handleGoogleLogin} disabled={loading} variant="outline" className="w-full">
               {loading ? 'Please wait...' : 'Login with Google'}
             </Button>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
-            </Link>
-          </div>
+          </form>
+           <Separator className="my-6" />
+           <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">Don't have an account?</p>
+                <Button asChild variant="secondary" className="w-full">
+                    <Link href="/signup">
+                        <UserPlus className="mr-2" />
+                        Sign Up
+                    </Link>
+                </Button>
+            </div>
         </CardContent>
       </Card>
     </div>

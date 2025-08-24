@@ -37,12 +37,7 @@ export default function Home() {
           <span className="text-xl font-bold">TechnoBillion AI</span>
         </Link>
         <nav className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild>
-                <Link href="/signup">Sign Up</Link>
-            </Button>
+            {/* Login and Signup buttons removed as requested */}
         </nav>
       </header>
 
@@ -56,15 +51,9 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
              <Button size="lg" asChild>
-              <Link href="/signup/student">
-                <UserPlus className="mr-2"/>
-                Get Started as a Student
-              </Link>
-            </Button>
-             <Button size="lg" variant="secondary" asChild>
-              <Link href="/signup/admin">
-                <UserCog className="mr-2"/>
-                Get Started as an Admin
+              <Link href="/login">
+                <LogIn className="mr-2"/>
+                Login to Your Account
               </Link>
             </Button>
           </div>
