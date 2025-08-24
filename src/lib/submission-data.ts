@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { submissionSchema, type Submission } from '@/app/admin/submissions/schema';
 import { db, storage } from './firebase';
-import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, orderBy, where, limit, setDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const submissionsCollection = collection(db, 'submissions');
@@ -23,7 +23,7 @@ export async function getSubmissions() {
   }
 }
 
-export async function addSubmission(submissionData: AddSubmissionData, file: File) {
+export async function addSubmission(submissionData: AddSubmissionData, file: File, existingSubmissionId?: string) {
     try {
         // 1. Upload file to Firebase Storage
         const storageRef = ref(storage, `submissions/${submissionData.assignmentId}/${Date.now()}_${file.name}`);
@@ -35,11 +35,51 @@ export async function addSubmission(submissionData: AddSubmissionData, file: Fil
             ...submissionData,
             fileUrl: downloadUrl,
         }
+        
+        // 3. If it's a resubmission, update the existing document. Otherwise, create a new one.
+        if (existingSubmissionId) {
+            const docRef = doc(db, 'submissions', existingSubmissionId);
+            await setDoc(docRef, submissionWithFile, { merge: true });
+            return { ...submissionWithFile, id: existingSubmissionId };
+        } else {
+            const docRef = await addDoc(submissionsCollection, submissionWithFile);
+            return { ...submissionWithFile, id: docRef.id };
+        }
 
-        const docRef = await addDoc(submissionsCollection, submissionWithFile);
-        return { ...submissionWithFile, id: docRef.id };
     } catch (error) {
         console.error("Error adding submission: ", error);
         throw new Error("Failed to add submission.");
+    }
+}
+
+export async function getSubmissionsForStudent(studentEmail: string) {
+    try {
+        const q = query(submissionsCollection, where("studentEmail", "==", studentEmail));
+        const querySnapshot = await getDocs(q);
+        const submissions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return z.array(submissionSchema).parse(submissions);
+    } catch (error) {
+        console.error(`Error fetching submissions for ${studentEmail}:`, error);
+        return [];
+    }
+}
+
+export async function getStudentSubmissionForAssignment(studentEmail: string, assignmentId: string) {
+    try {
+        const q = query(
+            submissionsCollection, 
+            where("studentEmail", "==", studentEmail), 
+            where("assignmentId", "==", assignmentId),
+            limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return null;
+        }
+        const doc = querySnapshot.docs[0];
+        return submissionSchema.parse({ id: doc.id, ...doc.data() });
+    } catch (error) {
+        console.error(`Error fetching specific submission for ${studentEmail}:`, error);
+        return null;
     }
 }

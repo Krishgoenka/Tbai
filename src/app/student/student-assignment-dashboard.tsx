@@ -1,27 +1,30 @@
 
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Book, CalendarCheck, CalendarX, Loader2 } from "lucide-react";
+import { Upload, FileText, Book, CalendarCheck, CalendarX, Loader2, CheckCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { Assignment } from "@/app/admin/assignments/schema";
+import type { Submission } from "@/app/admin/submissions/schema";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { submitAssignment } from "./actions";
 import { useAuth } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
 
 interface AssignmentCardProps {
   assignment: Assignment;
   isSelected: boolean;
   onSelect: () => void;
+  isSubmitted: boolean;
 }
 
-function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProps) {
+function AssignmentCard({ assignment, isSelected, onSelect, isSubmitted }: AssignmentCardProps) {
   return (
     <button
       onClick={onSelect}
@@ -36,10 +39,16 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
         <div className="p-2 bg-muted rounded-md mt-1">
              <Book className="h-5 w-5 text-primary" />
         </div>
-        <div>
+        <div className="flex-grow">
             <p className="font-semibold">{assignment.title}</p>
             <p className="text-sm text-muted-foreground">Due: {new Date(assignment.dueDate).toLocaleString()}</p>
         </div>
+        {isSubmitted && (
+            <Badge variant="secondary" className="flex items-center gap-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-300 dark:border-green-600">
+                <CheckCircle className="h-3 w-3" />
+                Submitted
+            </Badge>
+        )}
     </button>
   );
 }
@@ -48,14 +57,21 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
 interface StudentAssignmentDashboardProps {
   initialActiveAssignments: Assignment[];
   initialPastAssignments: Assignment[];
+  initialSubmissions: Submission[];
 }
 
-export function StudentAssignmentDashboard({ initialActiveAssignments, initialPastAssignments }: StudentAssignmentDashboardProps) {
+export function StudentAssignmentDashboard({ initialActiveAssignments, initialPastAssignments, initialSubmissions }: StudentAssignmentDashboardProps) {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Create a set of submitted assignment IDs for quick lookups
+  const submittedAssignmentIds = useMemo(() => 
+    new Set(initialSubmissions.map(s => s.assignmentId)), 
+    [initialSubmissions]
+  );
 
   useEffect(() => {
     if (initialActiveAssignments.length > 0) {
@@ -99,12 +115,16 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
       setSelectedFile(null);
       const fileInput = document.getElementById("assignment-file") as HTMLInputElement;
       if(fileInput) fileInput.value = "";
+      // Re-fetching or state update will be handled by revalidatePath in the action
     } else {
       toast({ title: "Submission Failed", description: result.message, variant: "destructive" });
     }
 
     setIsSubmitting(false);
   };
+  
+  const isPastDue = selectedAssignment ? new Date(selectedAssignment.dueDate) < new Date() : false;
+  const isSubmitted = selectedAssignment ? submittedAssignmentIds.has(selectedAssignment.id) : false;
 
 
   return (
@@ -130,6 +150,7 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                                 assignment={assignment} 
                                                 isSelected={selectedAssignment?.id === assignment.id}
                                                 onSelect={() => setSelectedAssignment(assignment)}
+                                                isSubmitted={submittedAssignmentIds.has(assignment.id)}
                                             />
                                         ))
                                     ) : (
@@ -151,6 +172,7 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                                 assignment={assignment} 
                                                 isSelected={selectedAssignment?.id === assignment.id}
                                                 onSelect={() => setSelectedAssignment(assignment)}
+                                                isSubmitted={submittedAssignmentIds.has(assignment.id)}
                                             />
                                         ))
                                     ) : (
@@ -211,13 +233,13 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                         type="file" 
                                         accept=".pdf,.png,.jpg,.jpeg,.mp4,.py,.c,.cpp,.ipynb,.csv"
                                         onChange={handleFileChange}
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || isPastDue}
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Allowed types: PDF, JPG, PNG, MP4, PY, C, CPP, IPYNB, CSV.
                                     </p>
                                 </div>
-                                <Button onClick={handleSubmit} disabled={isSubmitting || !selectedFile || new Date(selectedAssignment.dueDate) < new Date()}>
+                                <Button onClick={handleSubmit} disabled={isSubmitting || !selectedFile || isPastDue}>
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -226,11 +248,11 @@ export function StudentAssignmentDashboard({ initialActiveAssignments, initialPa
                                     ) : (
                                         <>
                                             <Upload className="mr-2 h-4 w-4" />
-                                            Submit Assignment
+                                            {isSubmitted ? 'Resubmit Assignment' : 'Submit Assignment'}
                                         </>
                                     )}
                                 </Button>
-                                {new Date(selectedAssignment.dueDate) < new Date() && (
+                                {isPastDue && (
                                     <p className="text-sm text-red-500">This assignment is past due. Submissions are closed.</p>
                                 )}
                              </div>

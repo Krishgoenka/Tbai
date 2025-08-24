@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { addSubmission } from "@/lib/submission-data";
+import { addSubmission, getStudentSubmissionForAssignment } from "@/lib/submission-data";
 import { db } from "@/lib/firebase";
 import { doc, increment, updateDoc } from "firebase/firestore";
 import { auth } from "@/lib/firebase";
@@ -22,7 +22,11 @@ export async function submitAssignment(
     try {
         const validatedData = submissionSchema.parse(data);
 
-        // 1. Add the submission to the 'submissions' collection
+        // 1. Check if the user has already submitted for this assignment
+        const existingSubmission = await getStudentSubmissionForAssignment(validatedData.studentEmail, validatedData.assignmentId);
+
+        // 2. Add or update the submission to the 'submissions' collection
+        // The addSubmission function will handle both creating a new doc or updating an existing one.
         await addSubmission({
             studentName: validatedData.studentName,
             studentEmail: validatedData.studentEmail,
@@ -30,15 +34,17 @@ export async function submitAssignment(
             assignmentTitle: validatedData.assignmentTitle,
             submissionDate: new Date().toISOString(),
             // Score is omitted, will be added during grading
-        }, file);
+        }, file, existingSubmission?.id);
         
-        // 2. Increment the submission count on the assignment document
-        const assignmentRef = doc(db, 'assignments', validatedData.assignmentId);
-        await updateDoc(assignmentRef, {
-            submissions: increment(1)
-        });
+        // 3. Increment submission count ONLY if it's the first time.
+        if (!existingSubmission) {
+            const assignmentRef = doc(db, 'assignments', validatedData.assignmentId);
+            await updateDoc(assignmentRef, {
+                submissions: increment(1)
+            });
+        }
 
-        // 3. Revalidate paths to update UI
+        // 4. Revalidate paths to update UI
         revalidatePath("/student");
         revalidatePath("/admin/assignments");
         revalidatePath("/admin/submissions");
