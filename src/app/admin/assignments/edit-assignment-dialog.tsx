@@ -22,7 +22,6 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { updateAssignmentAction } from "./actions"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
 
 interface EditAssignmentDialogProps {
     assignment: Assignment;
@@ -39,7 +38,6 @@ const formSchema = assignmentSchema.omit({ submissions: true, fileUrl: true }).e
 
 export function EditAssignmentDialog({ assignment, children, open, onOpenChange }: EditAssignmentDialogProps) {
     const { toast } = useToast();
-    const router = useRouter();
 
     const defaultValues = useMemo(() => {
         try {
