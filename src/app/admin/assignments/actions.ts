@@ -6,34 +6,31 @@ import { assignmentSchema } from "./schema"
 import { addAssignment as dbAddAssignment, updateAssignment, deleteAssignment, updateAssignmentStatus } from "@/lib/assignment-data"
 import { revalidatePath } from "next/cache"
 
-// This schema validates the data coming from the form, excluding fields that aren't on it.
-const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true, status: true, dueDate: true });
+// This schema validates the data extracted from FormData
+const addAssignmentFormSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl: true });
 
 // Schema for updating, omits fields not on the form.
 const updateAssignmentFormSchema = assignmentSchema.omit({ submissions: true, fileUrl: true });
 
 
-export async function addAssignment(
-    data: z.infer<typeof addAssignmentFormSchema>,
-    dueDate: string, // Receive dueDate separately
-    status: "Published" | "Draft",
-    file?: File
-) {
+export async function addAssignment(formData: FormData) {
     try {
-        const validatedData = addAssignmentFormSchema.parse(data);
+        const file = formData.get("file") as File | null;
 
-        // Construct the full assignment object AFTER validation
-        const fullAssignmentData = {
-            ...validatedData,
-            dueDate,
-            status,
+        const data = {
+            title: formData.get("title") as string,
+            description: formData.get("description") as string,
+            dueDate: formData.get("dueDate") as string,
+            status: formData.get("status") as "Published" | "Draft",
         };
 
-        await dbAddAssignment(fullAssignmentData, file);
+        const validatedData = addAssignmentFormSchema.parse(data);
+
+        await dbAddAssignment(validatedData, file && file.size > 0 ? file : undefined);
 
         revalidatePath("/admin/assignments");
         revalidatePath("/student");
-        return { success: true, message: `Assignment has been successfully ${status === 'Published' ? 'published' : 'saved as a draft'}.` };
+        return { success: true, message: `Assignment has been successfully ${validatedData.status === 'Published' ? 'published' : 'saved as a draft'}.` };
     } catch (error) {
         if (error instanceof z.ZodError) {
             return { success: false, message: error.errors.map(e => e.message).join(", ") };

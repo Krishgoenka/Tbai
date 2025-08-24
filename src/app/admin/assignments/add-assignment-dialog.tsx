@@ -21,7 +21,7 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { addAssignment } from "./actions"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { assignmentSchema } from "./schema"
 
 // This schema is only for the form fields, not the final database object.
@@ -30,7 +30,7 @@ const formSchema = assignmentSchema.omit({ id: true, submissions: true, fileUrl:
     dueTime: z.string().min(1, "Due time is required."),
     title: z.string().min(3, "Title is required."),
     description: z.string().min(10, "Description is required."),
-    file: z.instanceof(File).optional(),
+    file: z.any().optional(), // Keep for client-side validation
 });
 
 
@@ -38,6 +38,7 @@ export function AddAssignmentDialog() {
     const [isOpen, setIsOpen] = useState(false);
     const [submittingStatus, setSubmittingStatus] = useState<"Draft" | "Published" | "idle">("idle");
     const { toast } = useToast();
+    const formRef = useRef<HTMLFormElement>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -51,18 +52,18 @@ export function AddAssignmentDialog() {
 
     const processFormSubmission = async (status: "Published" | "Draft") => {
         const isValid = await form.trigger();
-        if (!isValid) {
-            return;
-        }
-        
+        if (!isValid) return;
+
         setSubmittingStatus(status);
         
+        const formData = new FormData(formRef.current!);
         const values = form.getValues();
-        // Combine date and time and convert to a full ISO string
         const combinedDueDate = new Date(`${values.dueDate}T${values.dueTime}`).toISOString();
         
-        // Pass the validated form data, the combined due date, the status, and the file to the action
-        const result = await addAssignment(values, combinedDueDate, status, values.file);
+        formData.append("dueDate", combinedDueDate);
+        formData.append("status", status);
+        
+        const result = await addAssignment(formData);
 
         if (result.success) {
             toast({
@@ -81,6 +82,12 @@ export function AddAssignmentDialog() {
         setSubmittingStatus("idle");
     }
 
+    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        // This function is intentionally left blank.
+        // Submission is handled by the buttons' onClick events.
+    };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -97,7 +104,7 @@ export function AddAssignmentDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[475px]">
          <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form ref={formRef} onSubmit={handleFormSubmit}>
                 <DialogHeader>
                 <DialogTitle>Add New Assignment</DialogTitle>
                 <DialogDescription>
@@ -165,17 +172,17 @@ export function AddAssignmentDialog() {
                     <FormField
                         control={form.control}
                         name="file"
-                        render={({ field: { onChange, value, ...rest } }) => (
+                        render={({ field }) => (
                             <FormItem className="grid grid-cols-4 items-center gap-4">
                                 <FormLabel className="text-right">PDF File</FormLabel>
                                 <FormControl>
                                     <Input 
                                         id="file" 
+                                        name="file" // Name attribute is crucial for FormData
                                         type="file" 
                                         accept=".pdf,.png,.jpg,.jpeg" 
                                         className="col-span-3" 
-                                        onChange={(e) => onChange(e.target.files?.[0])}
-                                        {...rest}
+                                        onChange={(e) => field.onChange(e.target.files?.[0])}
                                     />
                                 </FormControl>
                                 <FormMessage className="col-span-4" />
