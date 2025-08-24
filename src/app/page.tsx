@@ -17,7 +17,7 @@ function AnimatedHeading() {
     const [text, setText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
     const [loopNum, setLoopNum] = useState(0);
-    const [typingSpeed, setTypingSpeed] = useState(120);
+    const [typingSpeed, setTypingSpeed] = useState(100);
 
     const phrases = useMemo(() => [
         "Empowering One Billion Minds with AI.",
@@ -36,7 +36,7 @@ function AnimatedHeading() {
                 setText(fullText.substring(0, text.length + 1));
             }
 
-            setTypingSpeed(isDeleting ? 50 : 120);
+            setTypingSpeed(isDeleting ? 40 : 100);
 
             if (!isDeleting && text === fullText) {
                 setTimeout(() => setIsDeleting(true), 2000);
@@ -51,9 +51,40 @@ function AnimatedHeading() {
         return () => clearTimeout(timer);
     }, [text, isDeleting, loopNum, typingSpeed, phrases]);
 
+    const renderText = () => {
+        const currentPhrase = phrases[loopNum % phrases.length];
+        if (currentPhrase !== "Empowering One Billion Minds with AI.") {
+            return <span className="pr-1">{text}</span>;
+        }
+
+        const targetWord = "One Billion";
+        const startIndex = currentPhrase.indexOf(targetWord);
+        const endIndex = startIndex + targetWord.length;
+
+        const currentLength = text.length;
+
+        const before = currentPhrase.substring(0, startIndex);
+        const colored = currentPhrase.substring(startIndex, endIndex);
+        const after = currentPhrase.substring(endIndex);
+
+        return (
+            <span className="pr-1">
+                {currentLength <= before.length ? text : before}
+                {currentLength > before.length && (
+                    <span className="text-red-500">
+                        {colored.substring(0, currentLength - before.length)}
+                    </span>
+                )}
+                {currentLength > before.length + colored.length && (
+                    <span>{after.substring(0, currentLength - before.length - colored.length)}</span>
+                )}
+            </span>
+        );
+    };
+
     return (
-         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">
-            <span className="pr-1">{text}</span>
+         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 h-24">
+            {renderText()}
             <span className="animate-pulse">|</span>
         </h1>
     )
