@@ -106,7 +106,7 @@ export default function Home() {
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/tbai.jpg" alt="TechnoBillion AI Logo" width={32} height={32} className="rounded-md" />
-          <span className="text-xl font-bold">TechnoBillion AI</span>
+          <span className="text-xl font-bold">Techno Billion AI</span>
         </Link>
         <nav className="flex items-center gap-4">
             <Link href="https://www.linkedin.com/company/techno-billion-ai/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
@@ -200,5 +200,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
