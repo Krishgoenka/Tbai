@@ -112,7 +112,7 @@ export function EditEmployeeDialog({ employee, children, open, onOpenChange }: E
                             <FormItem className="grid grid-cols-4 items-center gap-4">
                                 <FormLabel className="text-right">Details</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="Profile details..." className="col-span-3" {...field} />
+                                    <Textarea placeholder="Profile details... (Optional)" className="col-span-3" {...field} />
                                 </FormControl>
                                 <FormMessage className="col-span-4 pl-[25%]" />
                             </FormItem>

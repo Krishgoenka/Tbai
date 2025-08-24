@@ -111,7 +111,7 @@ export function AddEmployeeDialog() {
                     name="details"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Details</FormLabel>
+                            <FormLabel>Details (Optional)</FormLabel>
                             <FormControl>
                                 <Textarea placeholder="Profile details, skills, etc." {...field} />
                             </FormControl>

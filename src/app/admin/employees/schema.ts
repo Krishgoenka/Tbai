@@ -11,7 +11,7 @@ export const employeeSchema = z.object({
   id: z.string(),
   name: z.string().min(2, "Name must be at least 2 characters."),
   role: z.string().min(2, "Role must be at least 2 characters."),
-  details: z.string().min(10, "Details must be at least 10 characters."),
+  details: z.string().optional(),
   tasks: z.array(taskSchema),
 })
 
