@@ -7,7 +7,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, Users, GraduationCap, LogIn, UserPlus, UserCog, Linkedin } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+
+// Animated heading component
+function AnimatedHeading() {
+    const [text, setText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [loopNum, setLoopNum] = useState(0);
+    const [typingSpeed, setTypingSpeed] = useState(150);
+
+    const phrases = useMemo(() => ["Empower Your Workforce.", "Elevate Your Students.", "Engineer Your Future."], []);
+
+    useEffect(() => {
+        const handleTyping = () => {
+            const i = loopNum % phrases.length;
+            const fullText = phrases[i];
+
+            if (isDeleting) {
+                setText(fullText.substring(0, text.length - 1));
+            } else {
+                setText(fullText.substring(0, text.length + 1));
+            }
+
+            setTypingSpeed(isDeleting ? 80 : 150);
+
+            if (!isDeleting && text === fullText) {
+                setTimeout(() => setIsDeleting(true), 2000);
+            } else if (isDeleting && text === "") {
+                setIsDeleting(false);
+                setLoopNum(loopNum + 1);
+            }
+        };
+
+        const timer = setTimeout(handleTyping, typingSpeed);
+
+        return () => clearTimeout(timer);
+    }, [text, isDeleting, loopNum, typingSpeed, phrases]);
+
+    return (
+         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">
+            <span className="pr-1">{text}</span>
+            <span className="animate-pulse">|</span>
+        </h1>
+    )
+}
+
 
 // Inline SVG for Instagram as it's not in lucide-react
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -64,9 +110,7 @@ export default function Home() {
 
       <main className="flex-1">
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 text-center py-20 md:py-32">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">
-            The Future of AI-Powered Management
-          </h1>
+          <AnimatedHeading />
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
             Streamline employee tasks, manage student assignments, and unlock powerful insights with our all-in-one AI platform.
           </p>
