@@ -1,23 +1,5 @@
 
-import { auth as adminAuth } from "firebase-admin";
-import { cookies } from "next/headers";
-import { getFirebaseAdminApp } from "./firebase-admin";
 
-getFirebaseAdminApp();
-
-export async function getAuthenticatedUser() {
-    const session = cookies().get("session")?.value;
-
-    if (!session) {
-        return null;
-    }
-
-    try {
-        const decodedIdToken = await adminAuth().verifySessionCookie(session, true);
-        const user = await adminAuth().getUser(decodedIdToken.uid);
-        return user;
-    } catch (error) {
-        console.error("Error verifying session cookie:", error);
-        return null;
-    }
-}
+// This file is temporarily empty to remove the dependency on firebase-admin, 
+// which was causing deployment issues due to missing environment variables.
+// Client-side auth will be used for now.
