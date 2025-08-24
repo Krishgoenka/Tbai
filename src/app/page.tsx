@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -83,7 +84,7 @@ function AnimatedHeading() {
     };
 
     return (
-         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 h-24">
+         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 h-24 -mt-4">
             {renderText()}
             <span className="animate-pulse">|</span>
         </h1>
