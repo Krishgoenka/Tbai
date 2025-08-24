@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { usePathname, useRouter } from "next/navigation";
 
 type UserRole = 'admin' | 'student' | null;
@@ -32,44 +32,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userDocRef = doc(db, 'users', firebaseUser.uid);
             const userDoc = await getDoc(userDocRef);
 
-            // Check for a temporary role set during signup
-            const signupRole = window.sessionStorage.getItem('signupRole');
+            const isAdminEmail = firebaseUser.email === 'goenkakrish02@gmail.com';
+            const determinedRole = isAdminEmail ? 'admin' : 'student';
 
             if (userDoc.exists()) {
-                const role = userDoc.data()?.role;
-                setUserRole(role);
-                if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
-                    router.push(role === 'admin' ? '/admin' : '/student');
+                const currentDbRole = userDoc.data()?.role;
+                // If the role in DB is different from what it should be, update it.
+                if (currentDbRole !== determinedRole) {
+                    await updateDoc(userDocRef, { role: determinedRole });
                 }
-            } else if (signupRole) {
-                // This is a new user, create their document
-                const role = signupRole === 'admin' ? 'admin' : 'student';
+                setUserRole(determinedRole);
+
+                if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
+                    router.push(determinedRole === 'admin' ? '/admin' : '/student');
+                }
+            } else {
+                // This is a new user, create their document with the correct role.
                 const newUserDoc: any = {
                     email: firebaseUser.email, 
-                    displayName: firebaseUser.displayName,
+                    displayName: firebaseUser.displayName || 'New User',
                     photoURL: firebaseUser.photoURL,
-                    role: role,
+                    role: determinedRole,
                     uid: firebaseUser.uid
                 };
-                if (role === 'student') {
+                 if (determinedRole === 'student') {
                     newUserDoc.batch = "";
                     newUserDoc.studentId = "";
                     newUserDoc.yearOfStudy = "";
                 }
                 await setDoc(userDocRef, newUserDoc);
-
-                setUserRole(role);
-                window.sessionStorage.removeItem('signupRole'); // Clean up temp item
-                 if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
-                    router.push(role === 'admin' ? '/admin' : '/student');
-                }
-            } else {
-                // User exists in Auth but not in Firestore and didn't just sign up
-                // This is an edge case, maybe redirect to a role selection or error page
-                setUserRole(null);
-                // For now, redirect to login to be safe
-                if (!pathname.startsWith('/login') && !pathname.startsWith('/signup')) {
-                    router.push('/login');
+                setUserRole(determinedRole);
+                
+                // Clean up session storage just in case
+                window.sessionStorage.removeItem('signupRole'); 
+                
+                if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
+                    router.push(determinedRole === 'admin' ? '/admin' : '/student');
                 }
             }
         } else {
